@@ -1,10 +1,594 @@
-<a href="./version1.html" target="new">Version 1</a>
-<br>
-<a href="./version2.html" target="new">Version 2</a>
-<br>
-<a href="./version3.html" target="new">Version 3</a> done by Dr. Mohammedomer Eltayeb
-<!--
-/*
-<a href="./version4.html" target="new">Version 4</a>
-*/
--->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GutEase | IBS Companion App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'calm-green': '#7dd3c0',
+                        'soft-blue': '#a8d8ea',
+                        'light-green': '#e8f5e8',
+                        'light-blue': '#e3f2fd',
+                        'deep-teal': '#4fd1c7',
+                        'gentle-blue': '#63b3ed',
+                        'rich-purple': '#805ad5',
+                        'warm-orange': '#ed8936'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e8f5e8 0%, #e3f2fd 100%);
+            min-height: 100vh;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #7dd3c0 0%, #a8d8ea 100%);
+        }
+        
+        .feature-card {
+            transition: all 0.3s ease;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .version-card {
+            transition: all 0.3s ease;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .version-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        
+        .version-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #7dd3c0, #a8d8ea);
+        }
+        
+        .screenshot {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .testimonial-card {
+            background: white;
+            border-radius: 16px;
+            position: relative;
+        }
+        
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            font-size: 80px;
+            color: #7dd3c0;
+            opacity: 0.2;
+            font-family: serif;
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: #7dd3c0;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .cta-button {
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(125, 211, 192, 0.4);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(125, 211, 192, 0.6);
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Navigation -->
+    <nav class="sticky-nav shadow-md py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-gradient-to-r from-calm-green to-soft-blue rounded-full flex items-center justify-center">
+                    <span class="text-white text-lg">🌿</span>
+                </div>
+                <span class="text-xl font-bold text-gray-800">GutEase</span>
+            </div>
+            
+            <div class="hidden md:flex space-x-8">
+                <a href="#features" class="nav-link text-gray-700 font-medium">Features</a>
+                <a href="#versions" class="nav-link text-gray-700 font-medium">Versions</a>
+                <a href="#testimonials" class="nav-link text-gray-700 font-medium">Testimonials</a>
+                <a href="#faq" class="nav-link text-gray-700 font-medium">FAQ</a>
+            </div>
+            
+            <div>
+                <button class="bg-calm-green text-white px-6 py-2 rounded-full font-medium hover:bg-deep-teal transition-colors">
+                    Download App
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-16 md:py-24">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-10 md:mb-0">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">Take Control of Your IBS Symptoms</h1>
+                <p class="text-xl mb-8 opacity-90">GutEase helps you track, understand, and manage your digestive health with personalized insights and easy-to-use tools.</p>
+                <div class="flex space-x-4">
+                    <button class="bg-white text-deep-teal px-6 py-3 rounded-full font-semibold cta-button">
+                        Get Started
+                    </button>
+                    <button class="border-2 border-white text-white px-6 py-3 rounded-full font-semibold hover:bg-white hover:text-deep-teal transition-colors">
+                        Learn More
+                    </button>
+                </div>
+            </div>
+            <div class="md:w-1/2 flex justify-center">
+                <div class="floating">
+                    <img src="https://placehold.co/300x600/7dd3c0/FFFFFF/png?text=GutEase+App" alt="GutEase App" class="w-64 md:w-80 rounded-3xl shadow-2xl">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Features -->
+    <section id="features" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Powerful Features for Digestive Health</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">GutEase provides comprehensive tools to help you understand and manage your IBS symptoms effectively.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-light-green p-6">
+                    <div class="w-14 h-14 bg-calm-green rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Symptom Tracking</h3>
+                    <p class="text-gray-600">Log your daily symptoms, food intake, and triggers to identify patterns and correlations.</p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="feature-card bg-light-blue p-6">
+                    <div class="w-14 h-14 bg-soft-blue rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-pills text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Medication Management</h3>
+                    <p class="text-gray-600">Track your medications and supplements with reminders and effectiveness ratings.</p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="feature-card bg-light-green p-6">
+                    <div class="w-14 h-14 bg-calm-green rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-utensils text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Food Diary</h3>
+                    <p class="text-gray-600">Identify food triggers with our comprehensive food and symptom correlation system.</p>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="feature-card bg-light-blue p-6">
+                    <div class="w-14 h-14 bg-soft-blue rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-file-medical text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Doctor Reports</h3>
+                    <p class="text-gray-600">Generate comprehensive reports to share with your healthcare provider.</p>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="feature-card bg-light-green p-6">
+                    <div class="w-14 h-14 bg-calm-green rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-brain text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Mental Health Tracking</h3>
+                    <p class="text-gray-600">Monitor stress and mood to understand the gut-brain connection in your symptoms.</p>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="feature-card bg-light-blue p-6">
+                    <div class="w-14 h-14 bg-soft-blue rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-chart-pie text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Insights & Analytics</h3>
+                    <p class="text-gray-600">Get personalized insights based on your data to better manage your condition.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Version Comparison -->
+    <section id="versions" class="py-16 gradient-bg">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Compare Versions</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Explore the different versions of GutEase to find which one works best for your needs.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+                <!-- Version 1 Card -->
+                <div class="version-card bg-white p-8 shadow-lg">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">GutEase Basic</h3>
+                        <div class="w-20 h-1 bg-calm-green mx-auto mb-4"></div>
+                        <p class="text-gray-600">Essential tracking for daily symptom management</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-calm-green mr-3"></i>
+                            <span>Symptom tracking</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-calm-green mr-3"></i>
+                            <span>Food diary</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-calm-green mr-3"></i>
+                            <span>Basic reports</span>
+                        </li>
+                        <li class="flex items-center text-gray-400">
+                            <i class="fas fa-times-circle mr-3"></i>
+                            <span>Doctor report generator</span>
+                        </li>
+                        <li class="flex items-center text-gray-400">
+                            <i class="fas fa-times-circle mr-3"></i>
+                            <span>Advanced analytics</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="./version1.html" class="block text-center bg-calm-green text-white py-3 rounded-lg font-semibold hover:bg-deep-teal transition-colors">
+                        Explore Version 1
+                    </a>
+                </div>
+                
+                <!-- Version 2 Card -->
+                <div class="version-card bg-white p-8 shadow-lg">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">GutEase Pro</h3>
+                        <div class="w-20 h-1 bg-soft-blue mx-auto mb-4"></div>
+                        <p class="text-gray-600">Comprehensive tools for advanced management</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-soft-blue mr-3"></i>
+                            <span>All Basic features</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-soft-blue mr-3"></i>
+                            <span>Medication tracking</span>
+                        </li>
+                        
+                    </ul>
+                    
+                    <a href="./version2.html" class="block text-center bg-soft-blue text-white py-3 rounded-lg font-semibold hover:bg-gentle-blue transition-colors">
+                        Explore Version 2
+                    </a>
+                </div>
+              <!-- /* latest version by Dr. Mohammedomer Eltayeb */ -->
+              <!-- Version 2 Card -->
+                <div class="version-card bg-white p-8 shadow-lg">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">GutEase Pro</h3>
+                        <div class="w-20 h-1 bg-soft-blue mx-auto mb-4"></div>
+                        <p class="text-gray-600">Comprehensive tools for advanced management</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-soft-blue mr-3"></i>
+                            <span>Additional features</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-soft-blue mr-3"></i>
+                            <span>Medication tracking</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-soft-blue mr-3"></i>
+                            <span>Doctor report generator</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-soft-blue mr-3"></i>
+                            <span>Advanced analytics</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-soft-blue mr-3"></i>
+                            <span>Mental health tracking</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="./version3.html" class="block text-center bg-soft-blue text-white py-3 rounded-lg font-semibold hover:bg-gentle-blue transition-colors">
+                        Explore Version 3
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">What Users Say</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Hear from people who have transformed their IBS management with GutEase.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="testimonial-card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-calm-green rounded-full flex items-center justify-center text-white font-bold mr-3">
+                            SA
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Sarah A.</h4>
+                            <p class="text-sm text-gray-500">IBS-D, 3 years</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"GutEase helped me identify my trigger foods that I never would have suspected. My symptoms have reduced by 70% since using this app!"</p>
+                    <div class="flex mt-4">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="testimonial-card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-soft-blue rounded-full flex items-center justify-center text-white font-bold mr-3">
+                            MJ
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Michael J.</h4>
+                            <p class="text-sm text-gray-500">IBS-M, 5 years</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"The doctor report feature is a game-changer. My gastroenterologist was impressed with the detailed data I could provide from GutEase."</p>
+                    <div class="flex mt-4">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="testimonial-card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-deep-teal rounded-full flex items-center justify-center text-white font-bold mr-3">
+                            EP
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Emma P.</h4>
+                            <p class="text-sm text-gray-500">IBS-C, 2 years</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"I love how GutEase shows the connection between my stress levels and symptoms. The mindfulness reminders have been incredibly helpful."</p>
+                    <div class="flex mt-4">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-16 gradient-bg">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Frequently Asked Questions</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Get answers to common questions about GutEase.</p>
+            </div>
+            
+            <div class="max-w-3xl mx-auto space-y-6">
+                <!-- FAQ 1 -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <button class="flex justify-between items-center w-full p-6 text-left font-semibold text-gray-800">
+                        <span>Is my health data secure with GutEase?</span>
+                        <i class="fas fa-chevron-down text-calm-green"></i>
+                    </button>
+                    <div class="px-6 pb-6 text-gray-600">
+                        Yes, we take data security very seriously. All your health information is encrypted and stored securely. We never share your personal data with third parties without your explicit consent.
+                    </div>
+                </div>
+                
+                <!-- FAQ 2 -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <button class="flex justify-between items-center w-full p-6 text-left font-semibold text-gray-800">
+                        <span>Can I use GutEase on multiple devices?</span>
+                        <i class="fas fa-chevron-down text-calm-green"></i>
+                    </button>
+                    <div class="px-6 pb-6 text-gray-600">
+                        Absolutely! Your GutEase account syncs across all your devices. You can access your data from your smartphone, tablet, or computer seamlessly.
+                    </div>
+                </div>
+                
+                <!-- FAQ 3 -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <button class="flex justify-between items-center w-full p-6 text-left font-semibold text-gray-800">
+                        <span>How does the doctor report feature work?</span>
+                        <i class="fas fa-chevron-down text-calm-green"></i>
+                    </button>
+                    <div class="px-6 pb-6 text-gray-600">
+                        The doctor report generator compiles your symptom data, triggers, and patterns into a comprehensive PDF report that you can share with your healthcare provider during appointments. This helps them better understand your condition and treatment progress.
+                    </div>
+                </div>
+                
+                <!-- FAQ 4 -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <button class="flex justify-between items-center w-full p-6 text-left font-semibold text-gray-800">
+                        <span>Is there a free trial available?</span>
+                        <i class="fas fa-chevron-down text-calm-green"></i>
+                    </button>
+                    <div class="px-6 pb-6 text-gray-600">
+                        Yes, we offer a 14-day free trial of GutEase Pro so you can experience all the advanced features before committing to a subscription.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-16 bg-gradient-to-r from-calm-green to-soft-blue text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Take Control of Your IBS?</h2>
+            <p class="text-xl mb-10 max-w-3xl mx-auto">Join thousands of users managing their digestive health with GutEase.</p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <button class="bg-white text-deep-teal px-8 py-3 rounded-full font-semibold cta-button">
+                    Download Now
+                </button>
+                <button class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-deep-teal transition-colors">
+                    Contact Us
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-calm-green to-soft-blue rounded-full flex items-center justify-center">
+                            <span class="text-white text-lg">🌿</span>
+                        </div>
+                        <span class="text-xl font-bold">GutEase</span>
+                    </div>
+                    <p class="text-gray-400">Your personal IBS companion for better digestive health.</p>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-lg mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#versions" class="text-gray-400 hover:text-white transition-colors">Versions</a></li>
+                        <li><a href="#testimonials" class="text-gray-400 hover:text-white transition-colors">Testimonials</a></li>
+                        <li><a href="#faq" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-lg mb-4">Resources</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">IBS Guide</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Support Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-lg mb-4">Contact Us</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope text-calm-green mr-2"></i>
+                            <span class="text-gray-400">support@gutease.com</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone text-calm-green mr-2"></i>
+                            <span class="text-gray-400">+1 (555) 123-4567</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fab fa-twitter text-calm-green mr-2"></i>
+                            <a href="#" class="text-gray-400 hover:text-white transition-colors">@GutEaseApp</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2023 GutEase. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple FAQ toggle functionality
+        document.querySelectorAll('#faq button').forEach(button => {
+            button.addEventListener('click', () => {
+                const content = button.nextElementSibling;
+                const icon = button.querySelector('i');
+                
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    content.style.display = 'block';
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
