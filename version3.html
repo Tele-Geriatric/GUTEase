@@ -1,0 +1,3307 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GutEase | راحة القولون - IBS Companion App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'calm-green': '#7dd3c0',
+                        'soft-blue': '#a8d8ea',
+                        'light-green': '#e8f5e8',
+                        'light-blue': '#e3f2fd',
+                        'deep-teal': '#4fd1c7',
+                        'gentle-blue': '#63b3ed'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .arabic { direction: rtl; font-family: 'Arial', sans-serif; }
+        .hidden { display: none; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .slider-container { position: relative; }
+        .slider-track { background: linear-gradient(to right, #7dd3c0 0%, #a8d8ea 100%); }
+        .food-tile { transition: all 0.3s ease; cursor: pointer; }
+        .food-tile:hover { transform: scale(1.05); }
+        .food-tile.selected { border: 3px solid #7dd3c0; background: #e8f5e8; }
+        .bristol-tile { transition: all 0.3s ease; cursor: pointer; }
+        .bristol-tile:hover { transform: scale(1.05); }
+        .bristol-tile.selected { border: 3px solid #7dd3c0; background: #e8f5e8; }
+        .nav-sticky { position: sticky; top: 0; z-index: 50; }
+        .section-padding { padding: 2rem 1rem; }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .gradient-bg { background: linear-gradient(135deg, #e8f5e8 0%, #e3f2fd 100%); }
+        .toast { position: fixed; top: 20px; right: 20px; z-index: 100; }
+        .form-embed { min-height: 600px; border-radius: 1rem; overflow: hidden; }
+        .insight-card { background: linear-gradient(135deg, rgba(125, 211, 192, 0.1) 0%, rgba(168, 216, 234, 0.1) 100%); }
+        .nav-link.active { color: #7dd3c0; font-weight: 600; }
+        .mobile-menu { transform: translateX(100%); transition: transform 0.3s ease; }
+        .mobile-menu.open { transform: translateX(0); }
+        .medication-tile { transition: all 0.3s ease; cursor: pointer; }
+        .medication-tile:hover { transform: scale(1.02); }
+        .medication-tile.selected { border: 3px solid #7dd3c0; background: #e8f5e8; }
+        .auth-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .medication-category { border-left: 4px solid #7dd3c0; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+
+    <!-- Authentication Section -->
+    <section id="auth-section" class="auth-container">
+        <div class="max-w-md mx-auto">
+            <!-- Sign In Form -->
+            <div id="signin-form" class="bg-white rounded-xl p-8 card-shadow">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-gradient-to-r from-calm-green to-soft-blue rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">🌿</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+                    <p class="text-gray-600">Sign in to your GutEase account</p>
+                </div>
+
+                <form onsubmit="signIn(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="signin-email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent" placeholder="Enter your email">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input type="password" id="signin-password" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent" placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="w-full bg-calm-green text-white py-3 px-6 rounded-lg hover:bg-deep-teal transition-colors font-medium">Sign In</button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600">Don't have an account?
+                        <button onclick="showSignUp()" class="text-calm-green hover:text-deep-teal font-medium">Sign up</button>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div id="signup-form" class="bg-white rounded-xl p-8 card-shadow hidden">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-gradient-to-r from-calm-green to-soft-blue rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">🌿</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Create Account</h2>
+                    <p class="text-gray-600">Join GutEase for better digestive health</p>
+                </div>
+
+                <form onsubmit="signUp(event)" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                            <input type="text" id="signup-firstname" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent" placeholder="First name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                            <input type="text" id="signup-lastname" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent" placeholder="Last name">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="signup-email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent" placeholder="Enter your email">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input type="password" id="signup-password" required minlength="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent" placeholder="Create a password (min 6 characters)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                        <input type="number" id="signup-age" required min="13" max="120" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent" placeholder="Enter your age">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                        <select id="signup-gender" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent">
+                            <option value="">Select gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                            <option value="prefer-not-to-say">Prefer not to say</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">IBS Type</label>
+                        <select id="signup-ibs-type" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent">
+                            <option value="">Select IBS type</option>
+                            <option value="ibs-d">IBS-D (Diarrhea predominant)</option>
+                            <option value="ibs-c">IBS-C (Constipation predominant)</option>
+                            <option value="ibs-m">IBS-M (Mixed)</option>
+                            <option value="ibs-u">IBS-U (Unsubtyped)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Diagnosis Date</label>
+                        <input type="date" id="signup-diagnosis-date" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent">
+                    </div>
+
+                    <!-- Medication Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-4">Current Medications (Select all that apply)</label>
+
+                        <!-- Regular Medications -->
+                        <div class="medication-category bg-light-green p-4 rounded-lg mb-4">
+                            <h4 class="font-medium text-gray-800 mb-3">📅 Regular Medications (Daily/Scheduled)</h4>
+                            <div class="grid grid-cols-1 gap-2" id="regular-medications">
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="regular-meds" value="loperamide" class="text-calm-green focus:ring-calm-green">
+                                    <span>Loperamide (Imodium) - Anti-diarrheal</span>
+                                </label>
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="regular-meds" value="psyllium" class="text-calm-green focus:ring-calm-green">
+                                    <span>Psyllium (Metamucil) - Fiber supplement</span>
+                                </label>
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="regular-meds" value="probiotics" class="text-calm-green focus:ring-calm-green">
+                                    <span>Probiotics - Gut health</span>
+                                </label>
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="regular-meds" value="rifaximin" class="text-calm-green focus:ring-calm-green">
+                                    <span>Rifaximin (Xifaxan) - Antibiotic</span>
+                                </label>
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="regular-meds" value="lubiprostone" class="text-calm-green focus:ring-calm-green">
+                                    <span>Lubiprostone (Amitiza) - For constipation</span>
+                                </label>
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="regular-meds" value="eluxadoline" class="text-calm-green focus:ring-calm-green">
+                                    <span>Eluxadoline (Viberzi) - For IBS-D</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- PRN Medications -->
+                        <div class="medication-category bg-light-blue p-4 rounded-lg">
+                            <h4 class="font-medium text-gray-800 mb-3">🆘 PRN Medications (As Needed)</h4>
+                            <div class="grid grid-cols-1 gap-2" id="prn-medications">
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="prn-meds" value="simethicone" class="text-calm-green focus:ring-calm-green">
+                                    <span>Simethicone (Gas-X) - For gas/bloating</span>
+                                </label>
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="prn-meds" value="hyoscyamine" class="text-calm-green focus:ring-calm-green">
+                                    <span>Hyoscyamine (Levsin) - Antispasmodic</span>
+                                </label>
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="prn-meds" value="dicyclomine" class="text-calm-green focus:ring-calm-green">
+                                    <span>Dicyclomine (Bentyl) - Antispasmodic</span>
+                                </label>
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="prn-meds" value="peppermint-oil" class="text-calm-green focus:ring-calm-green">
+                                    <span>Peppermint Oil - Natural antispasmodic</span>
+                                </label>
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="prn-meds" value="bismuth" class="text-calm-green focus:ring-calm-green">
+                                    <span>Bismuth Subsalicylate (Pepto-Bismol) - For diarrhea</span>
+                                </label>
+                                <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                                    <input type="checkbox" name="prn-meds" value="acetaminophen" class="text-calm-green focus:ring-calm-green">
+                                    <span>Acetaminophen (Tylenol) - For pain</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-calm-green text-white py-3 px-6 rounded-lg hover:bg-deep-teal transition-colors font-medium">Create Account</button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600">Already have an account?
+                        <button onclick="showSignIn()" class="text-calm-green hover:text-deep-teal font-medium">Sign in</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main App Container (Hidden until authenticated) -->
+    <div id="app-container" class="hidden">
+        <!-- Navigation -->
+        <nav class="nav-sticky bg-white/95 backdrop-blur-md shadow-lg border-b border-calm-green/20">
+            <div class="max-w-6xl mx-auto px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-calm-green to-soft-blue rounded-full flex items-center justify-center">
+                            <span class="text-white text-lg">🌿</span>
+                        </div>
+                        <h1 id="nav-title" class="text-xl font-bold text-gray-800">GutEase</h1>
+                    </div>
+
+                    <!-- Desktop Navigation -->
+                    <div class="hidden md:flex items-center space-x-6">
+                        <button onclick="showSection('home')" class="nav-link text-gray-700 hover:text-calm-green font-medium transition-colors active" id="nav-home">Home</button>
+                        <button onclick="showSection('account')" class="nav-link text-gray-700 hover:text-calm-green font-medium transition-colors" id="nav-account">Account</button>
+                        <button onclick="showSection('daily-log')" class="nav-link text-gray-700 hover:text-calm-green font-medium transition-colors" id="nav-daily">Daily Log</button>
+                        <button onclick="showSection('monthly-checkin')" class="nav-link text-gray-700 hover:text-calm-green font-medium transition-colors" id="nav-monthly">Monthly Check-in</button>
+                        <button onclick="showSection('my-logs')" class="nav-link text-gray-700 hover:text-calm-green font-medium transition-colors" id="nav-logs">My Logs</button>
+                        <button onclick="showSection('insights')" class="nav-link text-gray-700 hover:text-calm-green font-medium transition-colors" id="nav-insights">Insights</button>
+                        <button onclick="showSection('doctor-report')" class="nav-link text-gray-700 hover:text-calm-green font-medium transition-colors" id="nav-report">📋 Doctor Report</button>
+                        <button onclick="signOut()" class="text-red-600 hover:text-red-700 font-medium transition-colors">Sign Out</button>
+                    </div>
+
+                    <!-- User Info -->
+                    <div class="hidden md:flex items-center space-x-3">
+                        <span class="text-gray-600">Welcome, <span id="user-name" class="font-medium"></span></span>
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation Menu -->
+            <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-white shadow-xl md:hidden">
+                <div class="p-4 border-b">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-gray-800">Menu</span>
+                        <button onclick="toggleMobileMenu()" class="p-2 rounded-lg hover:bg-gray-100">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 space-y-4">
+                    <button onclick="showSection('home'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 rounded-lg hover:bg-light-green">Home</button>
+                    <button onclick="showSection('account'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 rounded-lg hover:bg-light-green">Account</button>
+                    <button onclick="showSection('daily-log'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 rounded-lg hover:bg-light-green">Daily Log</button>
+                    <button onclick="showSection('monthly-checkin'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 rounded-lg hover:bg-light-green">Monthly Check-in</button>
+                    <button onclick="showSection('my-logs'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 rounded-lg hover:bg-light-green">My Logs</button>
+                    <button onclick="showSection('insights'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 rounded-lg hover:bg-light-green">Insights</button>
+                    <button onclick="showSection('doctor-report'); toggleMobileMenu()" class="block w-full text-left py-2 px-4 rounded-lg hover:bg-light-green">📋 Doctor Report</button>
+                    <button onclick="signOut(); toggleMobileMenu()" class="block w-full text-left py-2 px-4 rounded-lg hover:bg-red-100 text-red-600">Sign Out</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Home Section -->
+        <section id="home-section" class="section-padding fade-in">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-4">Welcome to GutEase</h2>
+                    <p class="text-xl text-gray-600 mb-2">Your personal IBS companion for better digestive health</p>
+                    <p class="text-lg text-gray-500 arabic">مرحباً بك في راحة القولون - رفيقك الشخصي لصحة أفضل للجهاز الهضمي</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                    <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-xl transition-shadow">
+                        <div class="w-12 h-12 bg-calm-green rounded-lg flex items-center justify-center mb-4">
+                            <span class="text-white text-xl">📝</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Daily Tracking</h3>
+                        <p class="text-gray-600 mb-4">Log your symptoms, food intake, medications, and mood daily</p>
+                        <button onclick="showSection('daily-log')" class="w-full bg-calm-green text-white py-2 px-4 rounded-lg hover:bg-deep-teal transition-colors">Start Logging</button>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-xl transition-shadow">
+                        <div class="w-12 h-12 bg-soft-blue rounded-lg flex items-center justify-center mb-4">
+                            <span class="text-white text-xl">📊</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Monthly Insights</h3>
+                        <p class="text-gray-600 mb-4">Get comprehensive monthly reports and health insights</p>
+                        <button onclick="showSection('monthly-checkin')" class="w-full bg-soft-blue text-white py-2 px-4 rounded-lg hover:bg-gentle-blue transition-colors">View Insights</button>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-xl transition-shadow">
+                        <div class="w-12 h-12 bg-gradient-to-r from-calm-green to-soft-blue rounded-lg flex items-center justify-center mb-4">
+                            <span class="text-white text-xl">📈</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Progress Tracking</h3>
+                        <p class="text-gray-600 mb-4">Monitor your health journey with detailed analytics</p>
+                        <button onclick="showSection('my-logs')" class="w-full bg-gradient-to-r from-calm-green to-soft-blue text-white py-2 px-4 rounded-lg hover:opacity-90 transition-opacity">View Progress</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 card-shadow">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Quick Health Check</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-700 mb-4">How are you feeling today?</h4>
+                            <div class="space-y-3">
+                                <button onclick="quickMoodSelect('great')" class="w-full p-3 text-left rounded-lg border-2 border-gray-200 hover:border-calm-green hover:bg-light-green transition-all">
+                                    <span class="text-2xl mr-3">😊</span> Great - No symptoms
+                                </button>
+                                <button onclick="quickMoodSelect('good')" class="w-full p-3 text-left rounded-lg border-2 border-gray-200 hover:border-calm-green hover:bg-light-green transition-all">
+                                    <span class="text-2xl mr-3">🙂</span> Good - Mild symptoms
+                                </button>
+                                <button onclick="quickMoodSelect('okay')" class="w-full p-3 text-left rounded-lg border-2 border-gray-200 hover:border-calm-green hover:bg-light-green transition-all">
+                                    <span class="text-2xl mr-3">😐</span> Okay - Moderate symptoms
+                                </button>
+                                <button onclick="quickMoodSelect('poor')" class="w-full p-3 text-left rounded-lg border-2 border-gray-200 hover:border-calm-green hover:bg-light-green transition-all">
+                                    <span class="text-2xl mr-3">😔</span> Poor - Severe symptoms
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-700 mb-4">Today's Summary</h4>
+                            <div id="quick-summary" class="space-y-3 text-gray-600">
+                                <p>Select your mood to see personalized recommendations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Account Section -->
+        <section id="account-section" class="section-padding fade-in hidden">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Account Settings</h2>
+
+                <div class="bg-white rounded-xl p-8 card-shadow mb-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Personal Information</h3>
+                    <form class="space-y-4" id="account-form">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                <input type="text" id="account-firstname" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                <input type="text" id="account-lastname" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="account-email" readonly class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                            <input type="number" id="account-age" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                            <select id="account-gender" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                                <option value="prefer-not-to-say">Prefer not to say</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 card-shadow mb-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Health Information</h3>
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">IBS Type</label>
+                            <select id="account-ibs-type" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent">
+                                <option value="ibs-d">IBS-D (Diarrhea predominant)</option>
+                                <option value="ibs-c">IBS-C (Constipation predominant)</option>
+                                <option value="ibs-m">IBS-M (Mixed)</option>
+                                <option value="ibs-u">IBS-U (Unsubtyped)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Diagnosis Date</label>
+                            <input type="date" id="account-diagnosis-date" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Current Medications Display -->
+                <div class="bg-white rounded-xl p-8 card-shadow mb-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Current Medications</h3>
+                    <div id="current-medications-display">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    <button onclick="editMedications()" class="mt-4 bg-soft-blue text-white py-2 px-4 rounded-lg hover:bg-gentle-blue transition-colors">Edit Medications</button>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 card-shadow">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Preferences</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700">Daily reminder notifications</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-calm-green/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-calm-green"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700">Weekly summary reports</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-calm-green/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-calm-green"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700">Arabic language support</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-calm-green/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-calm-green"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <button onclick="saveAccount()" class="w-full bg-calm-green text-white py-3 px-6 rounded-lg hover:bg-deep-teal transition-colors font-medium">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Daily Log Section -->
+        <section id="daily-log-section" class="section-padding fade-in hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Daily Health Log</h2>
+
+                <div class="bg-white rounded-xl p-8 card-shadow mb-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Today's Entry</h3>
+                        <span class="text-gray-500" id="current-date"></span>
+                    </div>
+
+                    <!-- Urgency Level -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Bowel Movement Urgency</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                            <button onclick="selectUrgency(1)" class="urgency-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                <span class="text-3xl block mb-2">😌</span>
+                                <span class="text-sm font-medium">No Urgency</span>
+                                <span class="text-xs text-gray-500 block">Can delay easily</span>
+                            </button>
+                            <button onclick="selectUrgency(2)" class="urgency-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                <span class="text-3xl block mb-2">🤔</span>
+                                <span class="text-sm font-medium">Mild Urgency</span>
+                                <span class="text-xs text-gray-500 block">Can wait 10-15 min</span>
+                            </button>
+                            <button onclick="selectUrgency(3)" class="urgency-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                <span class="text-3xl block mb-2">😰</span>
+                                <span class="text-sm font-medium">Moderate Urgency</span>
+                                <span class="text-xs text-gray-500 block">Need bathroom soon</span>
+                            </button>
+                            <button onclick="selectUrgency(4)" class="urgency-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                <span class="text-3xl block mb-2">🚨</span>
+                                <span class="text-sm font-medium">Severe Urgency</span>
+                                <span class="text-xs text-gray-500 block">Immediate need</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bowel Movement Count -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Number of Bowel Movements Today</h4>
+                        <div class="flex items-center space-x-4">
+                            <button onclick="adjustBowelCount(-1)" class="w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-xl font-bold">-</button>
+                            <div class="text-center">
+                                <div id="bowel-count" class="text-4xl font-bold text-calm-green">0</div>
+                                <div class="text-sm text-gray-500">movements</div>
+                            </div>
+                            <button onclick="adjustBowelCount(1)" class="w-12 h-12 bg-calm-green hover:bg-deep-teal text-white rounded-full flex items-center justify-center text-xl font-bold">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Individual Symptom Severity -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-6">Symptom Severity (Rate each from 0-10)</h4>
+                        <div class="space-y-6">
+                            <!-- Abdominal Pain -->
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="text-sm font-medium text-gray-700">🤕 Abdominal Pain</label>
+                                    <span id="abdominal-pain-value" class="text-sm font-bold text-calm-green">0</span>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="abdominal-pain-severity" min="0" max="10" value="0" class="w-full h-3 slider-track rounded-lg appearance-none cursor-pointer">
+                                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                        <span>None</span>
+                                        <span>Severe</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bloating -->
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="text-sm font-medium text-gray-700">🎈 Bloating</label>
+                                    <span id="bloating-value" class="text-sm font-bold text-calm-green">0</span>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="bloating-severity" min="0" max="10" value="0" class="w-full h-3 slider-track rounded-lg appearance-none cursor-pointer">
+                                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                        <span>None</span>
+                                        <span>Severe</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Diarrhea -->
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="text-sm font-medium text-gray-700">💧 Diarrhea</label>
+                                    <span id="diarrhea-value" class="text-sm font-bold text-calm-green">0</span>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="diarrhea-severity" min="0" max="10" value="0" class="w-full h-3 slider-track rounded-lg appearance-none cursor-pointer">
+                                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                        <span>None</span>
+                                        <span>Severe</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Constipation -->
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="text-sm font-medium text-gray-700">🚫 Constipation</label>
+                                    <span id="constipation-value" class="text-sm font-bold text-calm-green">0</span>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="constipation-severity" min="0" max="10" value="0" class="w-full h-3 slider-track rounded-lg appearance-none cursor-pointer">
+                                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                        <span>None</span>
+                                        <span>Severe</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gas -->
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="text-sm font-medium text-gray-700">💨 Gas</label>
+                                    <span id="gas-value" class="text-sm font-bold text-calm-green">0</span>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="gas-severity" min="0" max="10" value="0" class="w-full h-3 slider-track rounded-lg appearance-none cursor-pointer">
+                                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                        <span>None</span>
+                                        <span>Severe</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Nausea -->
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="text-sm font-medium text-gray-700">🤢 Nausea</label>
+                                    <span id="nausea-value" class="text-sm font-bold text-calm-green">0</span>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="nausea-severity" min="0" max="10" value="0" class="w-full h-3 slider-track rounded-lg appearance-none cursor-pointer">
+                                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                        <span>None</span>
+                                        <span>Severe</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bristol Stool Chart -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Stool Type - Click the picture that looks most similar to yours</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                            <!-- Type 1 -->
+                            <div class="bristol-tile p-4 rounded-lg border-2 border-gray-200 bg-white text-center cursor-pointer hover:border-calm-green transition-all" onclick="selectBristol(1)">
+                                <div class="text-5xl mb-2">🔴</div>
+                                <div class="text-xs font-medium text-red-700 mb-1">Type 1</div>
+                                <div class="text-xs text-gray-600">Hard pellets</div>
+                            </div>
+
+                            <!-- Type 2 -->
+                            <div class="bristol-tile p-4 rounded-lg border-2 border-gray-200 bg-white text-center cursor-pointer hover:border-calm-green transition-all" onclick="selectBristol(2)">
+                                <div class="text-5xl mb-2">🟤</div>
+                                <div class="text-xs font-medium text-red-700 mb-1">Type 2</div>
+                                <div class="text-xs text-gray-600">Lumpy log</div>
+                            </div>
+
+                            <!-- Type 3 -->
+                            <div class="bristol-tile p-4 rounded-lg border-2 border-gray-200 bg-white text-center cursor-pointer hover:border-calm-green transition-all" onclick="selectBristol(3)">
+                                <div class="text-5xl mb-2">🟫</div>
+                                <div class="text-xs font-medium text-green-700 mb-1">Type 3</div>
+                                <div class="text-xs text-gray-600">Cracked log</div>
+                            </div>
+
+                            <!-- Type 4 -->
+                            <div class="bristol-tile p-4 rounded-lg border-2 border-gray-200 bg-white text-center cursor-pointer hover:border-calm-green transition-all" onclick="selectBristol(4)">
+                                <div class="text-5xl mb-2">🟢</div>
+                                <div class="text-xs font-medium text-green-700 mb-1">Type 4</div>
+                                <div class="text-xs text-gray-600">Smooth log</div>
+                            </div>
+
+                            <!-- Type 5 -->
+                            <div class="bristol-tile p-4 rounded-lg border-2 border-gray-200 bg-white text-center cursor-pointer hover:border-calm-green transition-all" onclick="selectBristol(5)">
+                                <div class="text-5xl mb-2">🟡</div>
+                                <div class="text-xs font-medium text-yellow-700 mb-1">Type 5</div>
+                                <div class="text-xs text-gray-600">Soft pieces</div>
+                            </div>
+
+                            <!-- Type 6 -->
+                            <div class="bristol-tile p-4 rounded-lg border-2 border-gray-200 bg-white text-center cursor-pointer hover:border-calm-green transition-all" onclick="selectBristol(6)">
+                                <div class="text-5xl mb-2">🟠</div>
+                                <div class="text-xs font-medium text-yellow-700 mb-1">Type 6</div>
+                                <div class="text-xs text-gray-600">Mushy</div>
+                            </div>
+
+                            <!-- Type 7 -->
+                            <div class="bristol-tile p-4 rounded-lg border-2 border-gray-200 bg-white text-center cursor-pointer hover:border-calm-green transition-all" onclick="selectBristol(7)">
+                                <div class="text-5xl mb-2">💧</div>
+                                <div class="text-xs font-medium text-yellow-700 mb-1">Type 7</div>
+                                <div class="text-xs text-gray-600">Watery</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <div class="inline-flex items-center space-x-4 text-sm">
+                                <span class="text-red-600">🔴 Constipated (1-2)</span>
+                                <span class="text-green-600">🟢 Normal (3-4)</span>
+                                <span class="text-yellow-600">🟡 Loose (5-7)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sleep Hours -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Sleep Quality & Duration</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Hours of Sleep</label>
+                                <div class="flex items-center space-x-4">
+                                    <button onclick="adjustSleepHours(-0.5)" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-lg font-bold">-</button>
+                                    <div class="text-center">
+                                        <div id="sleep-hours" class="text-3xl font-bold text-calm-green">7.0</div>
+                                        <div class="text-sm text-gray-500">hours</div>
+                                    </div>
+                                    <button onclick="adjustSleepHours(0.5)" class="w-10 h-10 bg-calm-green hover:bg-deep-teal text-white rounded-full flex items-center justify-center text-lg font-bold">+</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Sleep Quality</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button onclick="selectSleepQuality('poor')" class="sleep-quality-btn p-3 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                        <span class="text-2xl block mb-1">😴</span>
+                                        <span class="text-xs">Poor</span>
+                                    </button>
+                                    <button onclick="selectSleepQuality('fair')" class="sleep-quality-btn p-3 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                        <span class="text-2xl block mb-1">😐</span>
+                                        <span class="text-xs">Fair</span>
+                                    </button>
+                                    <button onclick="selectSleepQuality('good')" class="sleep-quality-btn p-3 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                        <span class="text-2xl block mb-1">😊</span>
+                                        <span class="text-xs">Good</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Red Flag Symptoms -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">⚠️ Important Warning Signs</h4>
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <p class="text-sm text-red-800 mb-3"><strong>Check any of these serious symptoms you experienced today:</strong></p>
+                            <div class="space-y-3">
+                                <label class="flex items-center space-x-3 p-3 rounded-lg border border-red-200 hover:bg-red-100 cursor-pointer">
+                                    <input type="checkbox" name="red-flags" value="blood-in-stool" class="text-red-600 focus:ring-red-500">
+                                    <span class="text-red-800">🩸 Blood in stool (bright red or dark/tarry)</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg border border-red-200 hover:bg-red-100 cursor-pointer">
+                                    <input type="checkbox" name="red-flags" value="severe-abdominal-pain" class="text-red-600 focus:ring-red-500">
+                                    <span class="text-red-800">🔥 Severe abdominal pain (8+ out of 10)</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg border border-red-200 hover:bg-red-100 cursor-pointer">
+                                    <input type="checkbox" name="red-flags" value="fever" class="text-red-600 focus:ring-red-500">
+                                    <span class="text-red-800">🌡️ Fever (over 100.4°F/38°C)</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg border border-red-200 hover:bg-red-100 cursor-pointer">
+                                    <input type="checkbox" name="red-flags" value="vomiting" class="text-red-600 focus:ring-red-500">
+                                    <span class="text-red-800">🤮 Persistent vomiting</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg border border-red-200 hover:bg-red-100 cursor-pointer">
+                                    <input type="checkbox" name="red-flags" value="dehydration" class="text-red-600 focus:ring-red-500">
+                                    <span class="text-red-800">💧 Signs of dehydration (dizziness, dry mouth)</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg border border-red-200 hover:bg-red-100 cursor-pointer">
+                                    <input type="checkbox" name="red-flags" value="weight-loss" class="text-red-600 focus:ring-red-500">
+                                    <span class="text-red-800">⚖️ Unexplained weight loss</span>
+                                </label>
+                            </div>
+                            <div class="mt-4 p-3 bg-red-100 rounded-lg">
+                                <p class="text-sm text-red-800"><strong>⚠️ Important:</strong> If you checked any of these symptoms, please contact your healthcare provider immediately. These may require urgent medical attention.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medications Taken -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Medications Taken Today</h4>
+                        <div id="daily-medications-section">
+                            <!-- Will be populated by JavaScript based on user's medications -->
+                        </div>
+                    </div>
+
+                    <!-- Food Intake -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Food Intake</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                            <div class="food-tile p-4 rounded-lg border-2 border-gray-200 text-center" onclick="toggleFood(this, 'dairy')">
+                                <span class="text-3xl block mb-2">🥛</span>
+                                <span class="text-sm">Dairy</span>
+                            </div>
+                            <div class="food-tile p-4 rounded-lg border-2 border-gray-200 text-center" onclick="toggleFood(this, 'gluten')">
+                                <span class="text-3xl block mb-2">🍞</span>
+                                <span class="text-sm">Gluten</span>
+                            </div>
+                            <div class="food-tile p-4 rounded-lg border-2 border-gray-200 text-center" onclick="toggleFood(this, 'spicy')">
+                                <span class="text-3xl block mb-2">🌶️</span>
+                                <span class="text-sm">Spicy Food</span>
+                            </div>
+                            <div class="food-tile p-4 rounded-lg border-2 border-gray-200 text-center" onclick="toggleFood(this, 'caffeine')">
+                                <span class="text-3xl block mb-2">☕</span>
+                                <span class="text-sm">Caffeine</span>
+                            </div>
+                            <div class="food-tile p-4 rounded-lg border-2 border-gray-200 text-center" onclick="toggleFood(this, 'alcohol')">
+                                <span class="text-3xl block mb-2">🍷</span>
+                                <span class="text-sm">Alcohol</span>
+                            </div>
+                            <div class="food-tile p-4 rounded-lg border-2 border-gray-200 text-center" onclick="toggleFood(this, 'fatty')">
+                                <span class="text-3xl block mb-2">🍟</span>
+                                <span class="text-sm">Fatty Food</span>
+                            </div>
+                            <div class="food-tile p-4 rounded-lg border-2 border-gray-200 text-center" onclick="toggleFood(this, 'fiber')">
+                                <span class="text-3xl block mb-2">🥗</span>
+                                <span class="text-sm">High Fiber</span>
+                            </div>
+                            <div class="food-tile p-4 rounded-lg border-2 border-gray-200 text-center" onclick="toggleFood(this, 'sugar')">
+                                <span class="text-3xl block mb-2">🍭</span>
+                                <span class="text-sm">Sugar</span>
+                            </div>
+                        </div>
+                        <textarea id="food-notes" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent" rows="3" placeholder="Additional notes about meals..."></textarea>
+                    </div>
+
+                    <!-- Mood & Stress -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Mood & Stress Level</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                            <button onclick="selectMood(1)" class="mood-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                <span class="text-3xl block mb-2">😢</span>
+                                <span class="text-sm">Very Low</span>
+                            </button>
+                            <button onclick="selectMood(2)" class="mood-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                <span class="text-3xl block mb-2">😔</span>
+                                <span class="text-sm">Low</span>
+                            </button>
+                            <button onclick="selectMood(3)" class="mood-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                <span class="text-3xl block mb-2">😐</span>
+                                <span class="text-sm">Neutral</span>
+                            </button>
+                            <button onclick="selectMood(4)" class="mood-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                <span class="text-3xl block mb-2">🙂</span>
+                                <span class="text-sm">Good</span>
+                            </button>
+                            <button onclick="selectMood(5)" class="mood-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                <span class="text-3xl block mb-2">😊</span>
+                                <span class="text-sm">Excellent</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Water Intake & Exercise -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Lifestyle Factors</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Water Intake (glasses)</label>
+                                <div class="flex items-center space-x-4">
+                                    <button onclick="adjustWaterIntake(-1)" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-lg font-bold">-</button>
+                                    <div class="text-center">
+                                        <div id="water-intake" class="text-3xl font-bold text-blue-500">8</div>
+                                        <div class="text-sm text-gray-500">glasses</div>
+                                    </div>
+                                    <button onclick="adjustWaterIntake(1)" class="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center text-lg font-bold">+</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Exercise/Physical Activity</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="selectExercise('none')" class="exercise-btn p-3 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                        <span class="text-2xl block mb-1">🛋️</span>
+                                        <span class="text-xs">None</span>
+                                    </button>
+                                    <button onclick="selectExercise('light')" class="exercise-btn p-3 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                        <span class="text-2xl block mb-1">🚶</span>
+                                        <span class="text-xs">Light</span>
+                                    </button>
+                                    <button onclick="selectExercise('moderate')" class="exercise-btn p-3 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                        <span class="text-2xl block mb-1">🏃</span>
+                                        <span class="text-xs">Moderate</span>
+                                    </button>
+                                    <button onclick="selectExercise('intense')" class="exercise-btn p-3 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center">
+                                        <span class="text-2xl block mb-1">💪</span>
+                                        <span class="text-xs">Intense</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Additional Notes</h4>
+                        <textarea id="additional-notes" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent" rows="4" placeholder="Any other observations, triggers, or notes about your day..."></textarea>
+                    </div>
+
+                    <div class="flex space-x-4">
+                        <button onclick="saveDailyLog()" class="w-full bg-calm-green text-white py-3 px-6 rounded-lg hover:bg-deep-teal transition-colors font-medium">Save Today's Log</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Monthly Check-in Section -->
+        <section id="monthly-checkin-section" class="section-padding fade-in hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Monthly Health Check-in</h2>
+
+                <div class="bg-white rounded-xl p-8 card-shadow mb-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Overall Health Assessment</h3>
+
+                    <div class="space-y-8">
+                        <!-- Flare Episodes -->
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-700 mb-4">Number of IBS Flare Episodes This Month</h4>
+                            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                                <div class="text-center">
+                                    <div id="flare-episodes-count" class="text-4xl font-bold text-calm-green mb-2">0</div>
+                                    <div class="text-sm text-gray-600 mb-4">Flare episodes detected from your daily logs</div>
+                                    <div class="text-xs text-gray-500">A flare episode is defined as 2+ consecutive days with symptom severity ≥ 6</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quality of Life -->
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-700 mb-4">How has IBS affected your quality of life this month?</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <button onclick="selectQuality('minimal')" class="quality-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center transition-all">
+                                    <span class="text-2xl block mb-2">😊</span>
+                                    <span class="text-sm">Minimal Impact</span>
+                                </button>
+                                <button onclick="selectQuality('mild')" class="quality-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center transition-all">
+                                    <span class="text-2xl block mb-2">🙂</span>
+                                    <span class="text-sm">Mild Impact</span>
+                                </button>
+                                <button onclick="selectQuality('moderate')" class="quality-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center transition-all">
+                                    <span class="text-2xl block mb-2">😐</span>
+                                    <span class="text-sm">Moderate Impact</span>
+                                </button>
+                                <button onclick="selectQuality('severe')" class="quality-btn p-4 rounded-lg border-2 border-gray-200 hover:border-calm-green text-center transition-all">
+                                    <span class="text-2xl block mb-2">😔</span>
+                                    <span class="text-sm">Severe Impact</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Symptom Frequency -->
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-700 mb-4">How often did you experience symptoms?</h4>
+                            <div class="space-y-3">
+                                <label class="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-light-green cursor-pointer transition-all">
+                                    <input type="radio" name="frequency" value="daily" class="text-calm-green focus:ring-calm-green">
+                                    <span>Daily</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-light-green cursor-pointer transition-all">
+                                    <input type="radio" name="frequency" value="weekly" class="text-calm-green focus:ring-calm-green">
+                                    <span>Several times a week</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-light-green cursor-pointer transition-all">
+                                    <input type="radio" name="frequency" value="occasional" class="text-calm-green focus:ring-calm-green">
+                                    <span>Occasionally</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-light-green cursor-pointer transition-all">
+                                    <input type="radio" name="frequency" value="rarely" class="text-calm-green focus:ring-calm-green">
+                                    <span>Rarely</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- PHQ-2 Depression Screening -->
+                        <div class="bg-purple-50 p-6 rounded-lg">
+                            <h4 class="text-lg font-medium text-gray-700 mb-4">🧠 Mental Health Screening - Depression (PHQ-2)</h4>
+                            <p class="text-sm text-gray-600 mb-4">Over the last 2 weeks, how often have you been bothered by any of the following problems?</p>
+
+                            <!-- PHQ-2 Question 1 -->
+                            <div class="mb-6">
+                                <p class="font-medium text-gray-700 mb-3">1. Little interest or pleasure in doing things</p>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                    <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                        <input type="radio" name="phq2-q1" value="0" class="text-purple-600 focus:ring-purple-500">
+                                        <span class="text-sm">Not at all</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                        <input type="radio" name="phq2-q1" value="1" class="text-purple-600 focus:ring-purple-500">
+                                        <span class="text-sm">Several days</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                        <input type="radio" name="phq2-q1" value="2" class="text-purple-600 focus:ring-purple-500">
+                                        <span class="text-sm">More than half the days</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                        <input type="radio" name="phq2-q1" value="3" class="text-purple-600 focus:ring-purple-500">
+                                        <span class="text-sm">Nearly every day</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- PHQ-2 Question 2 -->
+                            <div class="mb-4">
+                                <p class="font-medium text-gray-700 mb-3">2. Feeling down, depressed, or hopeless</p>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                    <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                        <input type="radio" name="phq2-q2" value="0" class="text-purple-600 focus:ring-purple-500">
+                                        <span class="text-sm">Not at all</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                        <input type="radio" name="phq2-q2" value="1" class="text-purple-600 focus:ring-purple-500">
+                                        <span class="text-sm">Several days</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                        <input type="radio" name="phq2-q2" value="2" class="text-purple-600 focus:ring-purple-500">
+                                        <span class="text-sm">More than half the days</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                        <input type="radio" name="phq2-q2" value="3" class="text-purple-600 focus:ring-purple-500">
+                                        <span class="text-sm">Nearly every day</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GAD-7 Anxiety Screening -->
+                        <div class="bg-orange-50 p-6 rounded-lg">
+                            <h4 class="text-lg font-medium text-gray-700 mb-4">😰 Mental Health Screening - Anxiety (GAD-7)</h4>
+                            <p class="text-sm text-gray-600 mb-4">Over the last 2 weeks, how often have you been bothered by the following problems?</p>
+
+                            <!-- GAD-7 Questions -->
+                            <div class="space-y-6">
+                                <!-- Question 1 -->
+                                <div>
+                                    <p class="font-medium text-gray-700 mb-3">1. Feeling nervous, anxious, or on edge</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q1" value="0" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Not at all</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q1" value="1" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Several days</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q1" value="2" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">More than half</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q1" value="3" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Nearly every day</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Question 2 -->
+                                <div>
+                                    <p class="font-medium text-gray-700 mb-3">2. Not being able to stop or control worrying</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q2" value="0" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Not at all</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q2" value="1" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Several days</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q2" value="2" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">More than half</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q2" value="3" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Nearly every day</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Question 3 -->
+                                <div>
+                                    <p class="font-medium text-gray-700 mb-3">3. Worrying too much about different things</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q3" value="0" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Not at all</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q3" value="1" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Several days</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q3" value="2" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">More than half</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q3" value="3" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Nearly every day</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Question 4 -->
+                                <div>
+                                    <p class="font-medium text-gray-700 mb-3">4. Trouble relaxing</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q4" value="0" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Not at all</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q4" value="1" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Several days</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q4" value="2" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">More than half</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q4" value="3" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Nearly every day</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Question 5 -->
+                                <div>
+                                    <p class="font-medium text-gray-700 mb-3">5. Being so restless that it's hard to sit still</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q5" value="0" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Not at all</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q5" value="1" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Several days</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q5" value="2" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">More than half</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q5" value="3" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Nearly every day</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Question 6 -->
+                                <div>
+                                    <p class="font-medium text-gray-700 mb-3">6. Becoming easily annoyed or irritable</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q6" value="0" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Not at all</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q6" value="1" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Several days</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q6" value="2" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">More than half</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q6" value="3" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Nearly every day</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Question 7 -->
+                                <div>
+                                    <p class="font-medium text-gray-700 mb-3">7. Feeling afraid as if something awful might happen</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q7" value="0" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Not at all</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q7" value="1" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Several days</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q7" value="2" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">More than half</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-white cursor-pointer transition-all">
+                                            <input type="radio" name="gad7-q7" value="3" class="text-orange-600 focus:ring-orange-500">
+                                            <span class="text-sm">Nearly every day</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trigger Identification -->
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-700 mb-4">What were your main triggers this month?</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-light-green cursor-pointer transition-all">
+                                    <input type="checkbox" class="text-calm-green focus:ring-calm-green" name="triggers" value="stress">
+                                    <span>Stress</span>
+                                </label>
+                                <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-light-green cursor-pointer transition-all">
+                                    <input type="checkbox" class="text-calm-green focus:ring-calm-green" name="triggers" value="certain-foods">
+                                    <span>Certain foods</span>
+                                </label>
+                                <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-light-green cursor-pointer transition-all">
+                                    <input type="checkbox" class="text-calm-green focus:ring-calm-green" name="triggers" value="lack-of-sleep">
+                                    <span>Lack of sleep</span>
+                                </label>
+                                <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-light-green cursor-pointer transition-all">
+                                    <input type="checkbox" class="text-calm-green focus:ring-calm-green" name="triggers" value="hormonal-changes">
+                                    <span>Hormonal changes</span>
+                                </label>
+                                <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-light-green cursor-pointer transition-all">
+                                    <input type="checkbox" class="text-calm-green focus:ring-calm-green" name="triggers" value="travel">
+                                    <span>Travel</span>
+                                </label>
+                                <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-light-green cursor-pointer transition-all">
+                                    <input type="checkbox" class="text-calm-green focus:ring-calm-green" name="triggers" value="weather-changes">
+                                    <span>Weather changes</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Treatment Effectiveness -->
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-700 mb-4">How effective were your current treatments?</h4>
+                            <div class="slider-container">
+                                <input type="range" id="treatment-effectiveness" min="0" max="10" value="5" class="w-full h-3 slider-track rounded-lg appearance-none cursor-pointer">
+                                <div class="flex justify-between text-sm text-gray-500 mt-2">
+                                    <span>Not effective (0)</span>
+                                    <span id="effectiveness-value" class="font-medium">5</span>
+                                    <span>Very effective (10)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Goals for Next Month -->
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-700 mb-4">Goals for Next Month</h4>
+                            <textarea id="monthly-goals" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-calm-green focus:border-transparent" rows="4" placeholder="What would you like to focus on improving next month?"></textarea>
+                        </div>
+                    </div>
+
+                    <button onclick="saveMonthlyCheckin()" class="w-full bg-calm-green text-white py-3 px-6 rounded-lg hover:bg-deep-teal transition-colors font-medium mt-8">Save Monthly Check-in</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Logs Section -->
+        <section id="my-logs-section" class="section-padding fade-in hidden">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">My Health Logs</h2>
+
+                <!-- Summary Cards -->
+                <div class="grid md:grid-cols-4 gap-6 mb-8" id="summary-cards">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+
+                <!-- Charts -->
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Symptom Severity Trend</h3>
+                        <canvas id="severityChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Mood Distribution</h3>
+                        <canvas id="moodChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Logs -->
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Recent Daily Logs</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Date</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Severity</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Mood</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Main Symptoms</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Triggers</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body">
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-6 flex justify-center">
+                        <button onclick="exportLogs()" class="bg-soft-blue text-white py-2 px-6 rounded-lg hover:bg-gentle-blue transition-colors font-medium">Export Data</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Doctor Report Section -->
+        <section id="doctor-report-section" class="section-padding fade-in hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">📋 Doctor Report Generator</h2>
+
+                <div class="bg-white rounded-xl p-8 card-shadow mb-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Generate Comprehensive Medical Report</h3>
+
+                    <div class="bg-blue-50 p-6 rounded-lg mb-6">
+                        <h4 class="font-medium text-blue-800 mb-3">📊 Report Overview</h4>
+                        <p class="text-blue-700 mb-4">This report will include:</p>
+                        <ul class="text-blue-700 space-y-2 text-sm">
+                            <li>• Complete patient demographics and medical history</li>
+                            <li>• Statistical analysis of all logged symptoms and patterns</li>
+                            <li>• Medication compliance and effectiveness tracking</li>
+                            <li>• Mental health screening results (PHQ-2 & GAD-7)</li>
+                            <li>• Trigger analysis and lifestyle factor correlations</li>
+                            <li>• Red flag symptom incidents requiring attention</li>
+                            <li>• Detailed daily logs and monthly check-in summaries</li>
+                            <li>• Professional formatting suitable for medical consultation</li>
+                        </ul>
+                    </div>
+
+                    <div id="report-summary" class="mb-6">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-green-50 p-6 rounded-lg">
+                            <h4 class="font-medium text-green-800 mb-3">✅ Data Available</h4>
+                            <div id="available-data">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="bg-yellow-50 p-6 rounded-lg">
+                            <h4 class="font-medium text-yellow-800 mb-3">⚠️ Important Notes</h4>
+                            <ul class="text-yellow-700 text-sm space-y-2">
+                                <li>• Report is generated from patient-logged data</li>
+                                <li>• Should be reviewed with healthcare provider</li>
+                                <li>• Contains sensitive medical information</li>
+                                <li>• Download will be in HTML format for easy viewing</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-4">
+                        <button onclick="generateDoctorReport()" class="flex-1 bg-calm-green text-white py-3 px-6 rounded-lg hover:bg-deep-teal transition-colors font-medium">
+                            📋 Generate & Download Report
+                        </button>
+                        <button onclick="previewReport()" class="bg-soft-blue text-white py-3 px-6 rounded-lg hover:bg-gentle-blue transition-colors font-medium">
+                            👁️ Preview Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Report Preview Modal -->
+                <div id="report-preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+                    <div class="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-xl font-bold text-gray-800">Report Preview</h3>
+                                <button onclick="closeReportPreview()" class="text-gray-500 hover:text-gray-700">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="report-preview-content" class="p-6">
+                            <!-- Preview content will be inserted here -->
+                        </div>
+                        <div class="p-6 border-t border-gray-200 flex space-x-4">
+                            <button onclick="generateDoctorReport()" class="flex-1 bg-calm-green text-white py-2 px-4 rounded-lg hover:bg-deep-teal transition-colors">
+                                Download Full Report
+                            </button>
+                            <button onclick="closeReportPreview()" class="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">
+                                Close Preview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Insights Section -->
+        <section id="insights-section" class="section-padding fade-in hidden">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Health Insights & Analytics</h2>
+
+                <!-- Key Insights -->
+                <div class="grid md:grid-cols-3 gap-6 mb-8" id="insights-cards">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+
+                <!-- Detailed Analytics -->
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Trigger Analysis</h3>
+                        <canvas id="triggerChart" width="400" height="300"></canvas>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Weekly Pattern</h3>
+                        <canvas id="weeklyChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="bg-white rounded-xl p-8 card-shadow">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-6">Personalized Recommendations</h3>
+                    <div id="recommendations-content">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden bg-calm-green text-white px-6 py-3 rounded-lg shadow-lg">
+        <span id="toast-message">Success!</span>
+    </div>
+
+    <!-- Medication Edit Modal -->
+    <div id="medication-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">Edit Medications</h3>
+
+            <!-- Regular Medications -->
+            <div class="medication-category bg-light-green p-4 rounded-lg mb-4">
+                <h4 class="font-medium text-gray-800 mb-3">📅 Regular Medications (Daily/Scheduled)</h4>
+                <div class="grid grid-cols-1 gap-2" id="modal-regular-medications">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- PRN Medications -->
+            <div class="medication-category bg-light-blue p-4 rounded-lg mb-6">
+                <h4 class="font-medium text-gray-800 mb-3">🆘 PRN Medications (As Needed)</h4>
+                <div class="grid grid-cols-1 gap-2" id="modal-prn-medications">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="flex space-x-4">
+                <button onclick="saveMedicationChanges()" class="flex-1 bg-calm-green text-white py-3 px-6 rounded-lg hover:bg-deep-teal transition-colors font-medium">Save Changes</button>
+                <button onclick="closeMedicationModal()" class="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-400 transition-colors font-medium">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentSection = 'home';
+        let selectedBristol = null;
+        let selectedMood = null;
+        let selectedFoods = [];
+        let selectedQuality = null;
+        let selectedUrgency = null;
+        let bowelCount = 0;
+        let sleepHours = 7.0;
+        let selectedSleepQuality = null;
+        let waterIntake = 8;
+        let selectedExercise = null;
+        let medicationsList = {
+            regular: [
+                { id: 'loperamide', name: 'Loperamide (Imodium) - Anti-diarrheal' },
+                { id: 'psyllium', name: 'Psyllium (Metamucil) - Fiber supplement' },
+                { id: 'probiotics', name: 'Probiotics - Gut health' },
+                { id: 'rifaximin', name: 'Rifaximin (Xifaxan) - Antibiotic' },
+                { id: 'lubiprostone', name: 'Lubiprostone (Amitiza) - For constipation' },
+                { id: 'eluxadoline', name: 'Eluxadoline (Viberzi) - For IBS-D' }
+            ],
+            prn: [
+                { id: 'simethicone', name: 'Simethicone (Gas-X) - For gas/bloating' },
+                { id: 'hyoscyamine', name: 'Hyoscyamine (Levsin) - Antispasmodic' },
+                { id: 'dicyclomine', name: 'Dicyclomine (Bentyl) - Antispasmodic' },
+                { id: 'peppermint-oil', name: 'Peppermint Oil - Natural antispasmodic' },
+                { id: 'bismuth', name: 'Bismuth Subsalicylate (Pepto-Bismol) - For diarrhea' },
+                { id: 'acetaminophen', name: 'Acetaminophen (Tylenol) - For pain' }
+            ]
+        };
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+            updateCurrentDate();
+            initializeSliders();
+        });
+
+        // Authentication functions
+        function checkAuthStatus() {
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                currentUser = JSON.parse(user);
+                showApp();
+            } else {
+                showAuth();
+            }
+        }
+
+        function showAuth() {
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('hidden');
+        }
+
+        function showApp() {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+
+            // Update user name in navigation
+            document.getElementById('user-name').textContent = currentUser.firstName;
+
+            // Load user data into account form
+            loadUserData();
+
+            // Show home section by default
+            showSection('home');
+        }
+
+        function showSignUp() {
+            document.getElementById('signin-form').classList.add('hidden');
+            document.getElementById('signup-form').classList.remove('hidden');
+        }
+
+        function showSignIn() {
+            document.getElementById('signup-form').classList.add('hidden');
+            document.getElementById('signin-form').classList.remove('hidden');
+        }
+
+        function signIn(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+
+            // Get users from localStorage
+            const users = JSON.parse(localStorage.getItem('gutease_users') || '[]');
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                showApp();
+                showToast('Welcome back!');
+            } else {
+                showToast('Invalid email or password', 'error');
+            }
+        }
+
+        function signUp(event) {
+            event.preventDefault();
+
+            const formData = {
+                firstName: document.getElementById('signup-firstname').value,
+                lastName: document.getElementById('signup-lastname').value,
+                email: document.getElementById('signup-email').value,
+                password: document.getElementById('signup-password').value,
+                age: document.getElementById('signup-age').value,
+                gender: document.getElementById('signup-gender').value,
+                ibsType: document.getElementById('signup-ibs-type').value,
+                diagnosisDate: document.getElementById('signup-diagnosis-date').value,
+                regularMedications: getSelectedMedications('regular-meds'),
+                prnMedications: getSelectedMedications('prn-meds'),
+                createdAt: new Date().toISOString()
+            };
+
+            // Get existing users
+            const users = JSON.parse(localStorage.getItem('gutease_users') || '[]');
+
+            // Check if email already exists
+            if (users.find(u => u.email === formData.email)) {
+                showToast('Email already exists', 'error');
+                return;
+            }
+
+            // Add new user
+            users.push(formData);
+            localStorage.setItem('gutease_users', JSON.stringify(users));
+
+            // Set as current user
+            currentUser = formData;
+            localStorage.setItem('currentUser', JSON.stringify(formData));
+
+            // Initialize empty logs for new user
+            localStorage.setItem(`ibsLogs_${formData.email}`, JSON.stringify([]));
+            localStorage.setItem(`monthlyCheckins_${formData.email}`, JSON.stringify([]));
+
+            showApp();
+            showToast('Account created successfully!');
+        }
+
+        function signOut() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            showAuth();
+            showToast('Signed out successfully');
+        }
+
+        function getSelectedMedications(name) {
+            const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        // User data management
+        function loadUserData() {
+            if (!currentUser) return;
+
+            document.getElementById('account-firstname').value = currentUser.firstName || '';
+            document.getElementById('account-lastname').value = currentUser.lastName || '';
+            document.getElementById('account-email').value = currentUser.email || '';
+            document.getElementById('account-age').value = currentUser.age || '';
+            document.getElementById('account-gender').value = currentUser.gender || '';
+            document.getElementById('account-ibs-type').value = currentUser.ibsType || '';
+            document.getElementById('account-diagnosis-date').value = currentUser.diagnosisDate || '';
+
+            // Display current medications
+            displayCurrentMedications();
+
+            // Populate daily medications section
+            populateDailyMedications();
+        }
+
+        function displayCurrentMedications() {
+            const container = document.getElementById('current-medications-display');
+            let html = '';
+
+            if (currentUser.regularMedications && currentUser.regularMedications.length > 0) {
+                html += '<div class="mb-4"><h4 class="font-medium text-gray-800 mb-2">📅 Regular Medications</h4><ul class="space-y-1">';
+                currentUser.regularMedications.forEach(medId => {
+                    const med = medicationsList.regular.find(m => m.id === medId);
+                    if (med) {
+                        html += `<li class="text-gray-600">• ${med.name}</li>`;
+                    }
+                });
+                html += '</ul></div>';
+            }
+
+            if (currentUser.prnMedications && currentUser.prnMedications.length > 0) {
+                html += '<div class="mb-4"><h4 class="font-medium text-gray-800 mb-2">🆘 PRN Medications</h4><ul class="space-y-1">';
+                currentUser.prnMedications.forEach(medId => {
+                    const med = medicationsList.prn.find(m => m.id === medId);
+                    if (med) {
+                        html += `<li class="text-gray-600">• ${med.name}</li>`;
+                    }
+                });
+                html += '</ul></div>';
+            }
+
+            if (!html) {
+                html = '<p class="text-gray-500">No medications selected</p>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function populateDailyMedications() {
+            const container = document.getElementById('daily-medications-section');
+            let html = '';
+
+            if (currentUser.regularMedications && currentUser.regularMedications.length > 0) {
+                html += '<div class="mb-6 bg-light-green p-4 rounded-lg"><h5 class="font-medium text-gray-800 mb-3">📅 Regular Medications - Did you take these today?</h5><div class="space-y-3">';
+                currentUser.regularMedications.forEach(medId => {
+                    const med = medicationsList.regular.find(m => m.id === medId);
+                    if (med) {
+                        html += `
+                            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" name="daily-regular-meds" value="${medId}" class="text-calm-green focus:ring-calm-green w-5 h-5">
+                                    <div class="flex-1">
+                                        <span class="font-medium text-gray-800">${med.name}</span>
+                                        <div class="text-sm text-gray-600 mt-1">✅ Check if taken as prescribed</div>
+                                    </div>
+                                </label>
+                            </div>
+                        `;
+                    }
+                });
+                html += '</div></div>';
+            }
+
+            if (currentUser.prnMedications && currentUser.prnMedications.length > 0) {
+                html += '<div class="mb-6 bg-light-blue p-4 rounded-lg"><h5 class="font-medium text-gray-800 mb-3">🆘 PRN Medications - As needed basis</h5><div class="space-y-3">';
+                currentUser.prnMedications.forEach(medId => {
+                    const med = medicationsList.prn.find(m => m.id === medId);
+                    if (med) {
+                        html += `
+                            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                                <label class="flex items-start space-x-3 cursor-pointer">
+                                    <input type="checkbox" name="daily-prn-meds" value="${medId}" class="text-calm-green focus:ring-calm-green w-5 h-5 mt-1" onchange="togglePrnReason('${medId}')">
+                                    <div class="flex-1">
+                                        <span class="font-medium text-gray-800">${med.name}</span>
+                                        <div class="text-sm text-gray-600 mt-1">Check if taken today</div>
+                                        <div id="prn-reason-${medId}" class="hidden mt-3">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Why did you take this medication?</label>
+                                            <textarea name="prn-reason-${medId}" class="w-full p-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Describe the symptoms or reason..."></textarea>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        `;
+                    }
+                });
+                html += '</div></div>';
+            }
+
+            if (!html) {
+                html = '<p class="text-gray-500">No medications configured. Please update your medications in Account Settings.</p>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function editMedications() {
+            // Populate modal with current medications
+            populateMedicationModal();
+            document.getElementById('medication-modal').classList.remove('hidden');
+        }
+
+        function populateMedicationModal() {
+            // Regular medications
+            let regularHtml = '';
+            medicationsList.regular.forEach(med => {
+                const checked = currentUser.regularMedications && currentUser.regularMedications.includes(med.id) ? 'checked' : '';
+                regularHtml += `
+                    <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                        <input type="checkbox" name="modal-regular-meds" value="${med.id}" ${checked} class="text-calm-green focus:ring-calm-green">
+                        <span>${med.name}</span>
+                    </label>
+                `;
+            });
+            document.getElementById('modal-regular-medications').innerHTML = regularHtml;
+
+            // PRN medications
+            let prnHtml = '';
+            medicationsList.prn.forEach(med => {
+                const checked = currentUser.prnMedications && currentUser.prnMedications.includes(med.id) ? 'checked' : '';
+                prnHtml += `
+                    <label class="medication-tile flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-white cursor-pointer">
+                        <input type="checkbox" name="modal-prn-meds" value="${med.id}" ${checked} class="text-calm-green focus:ring-calm-green">
+                        <span>${med.name}</span>
+                    </label>
+                `;
+            });
+            document.getElementById('modal-prn-medications').innerHTML = prnHtml;
+        }
+
+        function saveMedicationChanges() {
+            // Update current user's medications
+            currentUser.regularMedications = getSelectedMedications('modal-regular-meds');
+            currentUser.prnMedications = getSelectedMedications('modal-prn-meds');
+
+            // Update in localStorage
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            // Update users array
+            const users = JSON.parse(localStorage.getItem('gutease_users') || '[]');
+            const userIndex = users.findIndex(u => u.email === currentUser.email);
+            if (userIndex !== -1) {
+                users[userIndex] = currentUser;
+                localStorage.setItem('gutease_users', JSON.stringify(users));
+            }
+
+            // Refresh displays
+            displayCurrentMedications();
+            populateDailyMedications();
+
+            closeMedicationModal();
+            showToast('Medications updated successfully!');
+        }
+
+        function closeMedicationModal() {
+            document.getElementById('medication-modal').classList.add('hidden');
+        }
+
+        // Navigation functions
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('#app-container section');
+            sections.forEach(section => section.classList.add('hidden'));
+
+            // Show selected section
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+                targetSection.classList.add('fade-in');
+            }
+
+            // Update navigation active state
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+
+            const activeNav = document.getElementById('nav-' + sectionName);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            }
+
+            currentSection = sectionName;
+
+            // Initialize section-specific functionality
+            if (sectionName === 'my-logs') {
+                updateChartsData();
+                updateSummaryCards();
+                updateLogsTable();
+            } else if (sectionName === 'insights') {
+                updateInsightsCharts();
+                updateInsightsCards();
+                updateRecommendations();
+            } else if (sectionName === 'monthly-checkin') {
+                updateFlareEpisodesCount();
+            } else if (sectionName === 'doctor-report') {
+                updateReportSummary();
+            }
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('open');
+        }
+
+        // Date and slider functions
+        function updateCurrentDate() {
+            const today = new Date();
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+            const dateElement = document.getElementById('current-date');
+            if (dateElement) {
+                dateElement.textContent = today.toLocaleDateString('en-US', options);
+            }
+        }
+
+        function initializeSliders() {
+            // Individual symptom sliders
+            const symptomSliders = [
+                'abdominal-pain-severity',
+                'bloating-severity',
+                'diarrhea-severity',
+                'constipation-severity',
+                'gas-severity',
+                'nausea-severity'
+            ];
+
+            symptomSliders.forEach(sliderId => {
+                const slider = document.getElementById(sliderId);
+                if (slider) {
+                    const valueId = sliderId.replace('-severity', '-value');
+                    slider.addEventListener('input', function() {
+                        document.getElementById(valueId).textContent = this.value;
+                    });
+                }
+            });
+
+            const effectivenessSlider = document.getElementById('treatment-effectiveness');
+            if (effectivenessSlider) {
+                effectivenessSlider.addEventListener('input', function() {
+                    document.getElementById('effectiveness-value').textContent = this.value;
+                });
+            }
+        }
+
+        // Selection functions
+        function selectBristol(type) {
+            // Remove previous selection
+            document.querySelectorAll('.bristol-tile').forEach(tile => {
+                tile.classList.remove('selected');
+                tile.classList.remove('border-calm-green');
+                tile.classList.add('border-gray-200');
+                tile.style.backgroundColor = '';
+            });
+
+            // Add selection to clicked tile
+            const clickedTile = event.target.closest('.bristol-tile');
+            clickedTile.classList.add('selected');
+            clickedTile.classList.remove('border-gray-200');
+            clickedTile.classList.add('border-calm-green');
+            clickedTile.style.backgroundColor = '#e8f5e8';
+            selectedBristol = type;
+        }
+
+        function selectMood(mood) {
+            // Remove previous selection
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.classList.remove('border-calm-green');
+                btn.classList.add('border-gray-200');
+                btn.style.backgroundColor = '';
+            });
+
+            // Add selection to clicked button
+            const clickedBtn = event.target.closest('.mood-btn');
+            clickedBtn.classList.add('selected');
+            clickedBtn.classList.remove('border-gray-200');
+            clickedBtn.classList.add('border-calm-green');
+            clickedBtn.style.backgroundColor = '#e8f5e8';
+            selectedMood = mood;
+        }
+
+        function selectQuality(quality) {
+            // Remove previous selection
+            document.querySelectorAll('.quality-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.classList.remove('border-calm-green');
+                btn.classList.add('border-gray-200');
+                btn.style.backgroundColor = '';
+            });
+
+            // Add selection to clicked button
+            const clickedBtn = event.target.closest('.quality-btn');
+            clickedBtn.classList.add('selected');
+            clickedBtn.classList.remove('border-gray-200');
+            clickedBtn.classList.add('border-calm-green');
+            clickedBtn.style.backgroundColor = '#e8f5e8';
+            selectedQuality = quality;
+        }
+
+        function toggleFood(element, foodType) {
+            element.classList.toggle('selected');
+
+            if (element.classList.contains('selected')) {
+                element.style.backgroundColor = '#e8f5e8';
+                element.classList.remove('border-gray-200');
+                element.classList.add('border-calm-green');
+                if (!selectedFoods.includes(foodType)) {
+                    selectedFoods.push(foodType);
+                }
+            } else {
+                element.style.backgroundColor = '';
+                element.classList.remove('border-calm-green');
+                element.classList.add('border-gray-200');
+                selectedFoods = selectedFoods.filter(food => food !== foodType);
+            }
+        }
+
+        function selectUrgency(urgency) {
+            // Remove previous selection
+            document.querySelectorAll('.urgency-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.classList.remove('border-calm-green');
+                btn.classList.add('border-gray-200');
+                btn.style.backgroundColor = '';
+            });
+
+            // Add selection to clicked button
+            const clickedBtn = event.target.closest('.urgency-btn');
+            clickedBtn.classList.add('selected');
+            clickedBtn.classList.remove('border-gray-200');
+            clickedBtn.classList.add('border-calm-green');
+            clickedBtn.style.backgroundColor = '#e8f5e8';
+            selectedUrgency = urgency;
+        }
+
+        function adjustBowelCount(change) {
+            bowelCount = Math.max(0, bowelCount + change);
+            document.getElementById('bowel-count').textContent = bowelCount;
+        }
+
+        function adjustSleepHours(change) {
+            sleepHours = Math.max(0, Math.min(24, sleepHours + change));
+            document.getElementById('sleep-hours').textContent = sleepHours.toFixed(1);
+        }
+
+        function selectSleepQuality(quality) {
+            // Remove previous selection
+            document.querySelectorAll('.sleep-quality-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.classList.remove('border-calm-green');
+                btn.classList.add('border-gray-200');
+                btn.style.backgroundColor = '';
+            });
+
+            // Add selection to clicked button
+            const clickedBtn = event.target.closest('.sleep-quality-btn');
+            clickedBtn.classList.add('selected');
+            clickedBtn.classList.remove('border-gray-200');
+            clickedBtn.classList.add('border-calm-green');
+            clickedBtn.style.backgroundColor = '#e8f5e8';
+            selectedSleepQuality = quality;
+        }
+
+        function adjustWaterIntake(change) {
+            waterIntake = Math.max(0, waterIntake + change);
+            document.getElementById('water-intake').textContent = waterIntake;
+        }
+
+        function selectExercise(exercise) {
+            // Remove previous selection
+            document.querySelectorAll('.exercise-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.classList.remove('border-calm-green');
+                btn.classList.add('border-gray-200');
+                btn.style.backgroundColor = '';
+            });
+
+            // Add selection to clicked button
+            const clickedBtn = event.target.closest('.exercise-btn');
+            clickedBtn.classList.add('selected');
+            clickedBtn.classList.remove('border-gray-200');
+            clickedBtn.classList.add('border-calm-green');
+            clickedBtn.style.backgroundColor = '#e8f5e8';
+            selectedExercise = exercise;
+        }
+
+        function togglePrnReason(medId) {
+            const checkbox = document.querySelector(`input[name="daily-prn-meds"][value="${medId}"]`);
+            const reasonDiv = document.getElementById(`prn-reason-${medId}`);
+
+            if (checkbox.checked) {
+                reasonDiv.classList.remove('hidden');
+            } else {
+                reasonDiv.classList.add('hidden');
+                // Clear the textarea when unchecked
+                const textarea = reasonDiv.querySelector('textarea');
+                if (textarea) textarea.value = '';
+            }
+        }
+
+        // Quick mood selection for home page
+        function quickMoodSelect(mood) {
+            const summaryDiv = document.getElementById('quick-summary');
+            let recommendations = '';
+
+            switch(mood) {
+                case 'great':
+                    recommendations = `
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <p class="font-medium text-green-800 mb-2">🎉 Excellent! Keep it up!</p>
+                            <p class="text-green-700 text-sm">Consider logging what you did today to maintain this feeling.</p>
+                        </div>
+                    `;
+                    break;
+                case 'good':
+                    recommendations = `
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <p class="font-medium text-blue-800 mb-2">👍 Good day with mild symptoms</p>
+                            <p class="text-blue-700 text-sm">Monitor your triggers and continue current management strategies.</p>
+                        </div>
+                    `;
+                    break;
+                case 'okay':
+                    recommendations = `
+                        <div class="p-4 bg-yellow-50 rounded-lg">
+                            <p class="font-medium text-yellow-800 mb-2">⚠️ Moderate symptoms today</p>
+                            <p class="text-yellow-700 text-sm">Consider stress management techniques and review recent food intake.</p>
+                        </div>
+                    `;
+                    break;
+                case 'poor':
+                    recommendations = `
+                        <div class="p-4 bg-red-50 rounded-lg">
+                            <p class="font-medium text-red-800 mb-2">💔 Difficult day - be gentle with yourself</p>
+                            <p class="text-red-700 text-sm">Focus on rest, hydration, and gentle foods. Consider contacting your healthcare provider if symptoms persist.</p>
+                        </div>
+                    `;
+                    break;
+            }
+
+            summaryDiv.innerHTML = recommendations;
+        }
+
+        // Save functions
+        function saveDailyLog() {
+            if (!currentUser) return;
+
+            // Collect PRN medication reasons
+            const prnMedsTaken = getSelectedMedications('daily-prn-meds');
+            const prnReasons = {};
+            prnMedsTaken.forEach(medId => {
+                const reasonTextarea = document.querySelector(`textarea[name="prn-reason-${medId}"]`);
+                if (reasonTextarea) {
+                    prnReasons[medId] = reasonTextarea.value;
+                }
+            });
+
+            // Collect red flag symptoms
+            const redFlags = [];
+            document.querySelectorAll('input[name="red-flags"]:checked').forEach(checkbox => {
+                redFlags.push(checkbox.value);
+            });
+
+            // Collect all form data
+            const logData = {
+                date: new Date().toISOString().split('T')[0],
+                urgency: selectedUrgency,
+                bowelCount: bowelCount,
+                symptoms: {
+                    abdominalPain: document.getElementById('abdominal-pain-severity').value,
+                    bloating: document.getElementById('bloating-severity').value,
+                    diarrhea: document.getElementById('diarrhea-severity').value,
+                    constipation: document.getElementById('constipation-severity').value,
+                    gas: document.getElementById('gas-severity').value,
+                    nausea: document.getElementById('nausea-severity').value
+                },
+                bristol: selectedBristol,
+                sleepHours: sleepHours,
+                sleepQuality: selectedSleepQuality,
+                redFlags: redFlags,
+                mood: selectedMood,
+                foods: selectedFoods,
+                waterIntake: waterIntake,
+                exercise: selectedExercise,
+                regularMedsTaken: getSelectedMedications('daily-regular-meds'),
+                prnMedsTaken: prnMedsTaken,
+                prnReasons: prnReasons,
+                foodNotes: document.getElementById('food-notes').value,
+                notes: document.getElementById('additional-notes').value,
+                timestamp: new Date().toISOString()
+            };
+
+            // Check for red flags and show warning
+            if (redFlags.length > 0) {
+                const redFlagWarning = confirm(
+                    `⚠️ WARNING: You've reported serious symptoms (${redFlags.join(', ')}). ` +
+                    'These may require immediate medical attention. Have you contacted your healthcare provider?\n\n' +
+                    'Click OK to save the log, or Cancel to review your entries.'
+                );
+                if (!redFlagWarning) {
+                    return;
+                }
+            }
+
+            // Save to user-specific localStorage
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            let logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+
+            // Check if log for today already exists
+            const todayIndex = logs.findIndex(log => log.date === logData.date);
+            if (todayIndex !== -1) {
+                logs[todayIndex] = logData; // Update existing log
+            } else {
+                logs.push(logData); // Add new log
+            }
+
+            localStorage.setItem(userLogsKey, JSON.stringify(logs));
+
+            showToast('Daily log saved successfully!');
+
+            // Reset form
+            resetDailyLogForm();
+        }
+
+        function saveMonthlyCheckin() {
+            if (!currentUser) return;
+
+            // Calculate PHQ-2 score
+            const phq2Q1 = document.querySelector('input[name="phq2-q1"]:checked')?.value || 0;
+            const phq2Q2 = document.querySelector('input[name="phq2-q2"]:checked')?.value || 0;
+            const phq2Score = parseInt(phq2Q1) + parseInt(phq2Q2);
+
+            // Calculate GAD-7 score
+            let gad7Score = 0;
+            for (let i = 1; i <= 7; i++) {
+                const answer = document.querySelector(`input[name="gad7-q${i}"]:checked`)?.value || 0;
+                gad7Score += parseInt(answer);
+            }
+
+            const checkinData = {
+                date: new Date().toISOString().split('T')[0],
+                flareEpisodes: calculateFlareEpisodes(),
+                quality: selectedQuality,
+                frequency: document.querySelector('input[name="frequency"]:checked')?.value,
+                phq2Score: phq2Score,
+                phq2Interpretation: interpretPHQ2(phq2Score),
+                gad7Score: gad7Score,
+                gad7Interpretation: interpretGAD7(gad7Score),
+                triggers: getSelectedTriggers(),
+                effectiveness: document.getElementById('treatment-effectiveness').value,
+                goals: document.getElementById('monthly-goals').value,
+                timestamp: new Date().toISOString()
+            };
+
+            const userCheckinsKey = `monthlyCheckins_${currentUser.email}`;
+            let checkins = JSON.parse(localStorage.getItem(userCheckinsKey) || '[]');
+            checkins.push(checkinData);
+            localStorage.setItem(userCheckinsKey, JSON.stringify(checkins));
+
+            // Show mental health screening results if concerning
+            if (phq2Score >= 3 || gad7Score >= 10) {
+                const alertMessage = `Mental Health Screening Results:\n\n` +
+                    `Depression (PHQ-2): ${phq2Score}/6 - ${interpretPHQ2(phq2Score)}\n` +
+                    `Anxiety (GAD-7): ${gad7Score}/21 - ${interpretGAD7(gad7Score)}\n\n` +
+                    `These scores suggest you may benefit from speaking with a mental health professional. ` +
+                    `Please consider discussing these results with your healthcare provider.`;
+                alert(alertMessage);
+            }
+
+            showToast('Monthly check-in saved successfully!');
+        }
+
+        function calculateFlareEpisodes() {
+            if (!currentUser) return 0;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+
+            // Get logs from the last 30 days
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            const recentLogs = logs.filter(log => {
+                const logDate = new Date(log.date);
+                return logDate >= thirtyDaysAgo;
+            }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            let flareEpisodes = 0;
+            let consecutiveHighDays = 0;
+
+            recentLogs.forEach(log => {
+                // Calculate max severity from individual symptoms
+                let maxSeverity = 0;
+                if (log.symptoms && typeof log.symptoms === 'object') {
+                    const symptomValues = Object.values(log.symptoms).map(v => parseInt(v) || 0);
+                    maxSeverity = symptomValues.length > 0 ? Math.max(...symptomValues) : 0;
+                } else if (log.severity) {
+                    maxSeverity = parseInt(log.severity);
+                }
+
+                if (maxSeverity >= 6) {
+                    consecutiveHighDays++;
+                } else {
+                    if (consecutiveHighDays >= 2) {
+                        flareEpisodes++;
+                    }
+                    consecutiveHighDays = 0;
+                }
+            });
+
+            // Check if we ended with a flare episode
+            if (consecutiveHighDays >= 2) {
+                flareEpisodes++;
+            }
+
+            return flareEpisodes;
+        }
+
+        function interpretPHQ2(score) {
+            if (score >= 3) return 'Positive screen - further evaluation recommended';
+            return 'Negative screen';
+        }
+
+        function interpretGAD7(score) {
+            if (score >= 15) return 'Severe anxiety';
+            if (score >= 10) return 'Moderate anxiety';
+            if (score >= 5) return 'Mild anxiety';
+            return 'Minimal anxiety';
+        }
+
+        function saveAccount() {
+            if (!currentUser) return;
+
+            // Update current user data
+            currentUser.firstName = document.getElementById('account-firstname').value;
+            currentUser.lastName = document.getElementById('account-lastname').value;
+            currentUser.age = document.getElementById('account-age').value;
+            currentUser.gender = document.getElementById('account-gender').value;
+            currentUser.ibsType = document.getElementById('account-ibs-type').value;
+            currentUser.diagnosisDate = document.getElementById('account-diagnosis-date').value;
+
+            // Update in localStorage
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            // Update users array
+            const users = JSON.parse(localStorage.getItem('gutease_users') || '[]');
+            const userIndex = users.findIndex(u => u.email === currentUser.email);
+            if (userIndex !== -1) {
+                users[userIndex] = currentUser;
+                localStorage.setItem('gutease_users', JSON.stringify(users));
+            }
+
+            // Update user name in navigation
+            document.getElementById('user-name').textContent = currentUser.firstName;
+
+            showToast('Account settings saved successfully!');
+        }
+
+        // Helper functions
+        function getSelectedSymptoms() {
+            const symptoms = [];
+            document.querySelectorAll('input[name="symptoms"]:checked').forEach(checkbox => {
+                symptoms.push(checkbox.value);
+            });
+            return symptoms;
+        }
+
+        function getSelectedTriggers() {
+            const triggers = [];
+            document.querySelectorAll('input[name="triggers"]:checked').forEach(checkbox => {
+                triggers.push(checkbox.value);
+            });
+            return triggers;
+        }
+
+        function generateDoctorReport() {
+            if (!currentUser) return;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const userCheckinsKey = `monthlyCheckins_${currentUser.email}`;
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+            const checkins = JSON.parse(localStorage.getItem(userCheckinsKey) || '[]');
+
+            if (logs.length === 0) {
+                showToast('No data available to generate report. Please log some daily entries first.', 'error');
+                return;
+            }
+
+            // Generate comprehensive report
+            const reportData = generateComprehensiveReport(logs, checkins);
+
+            // Create downloadable HTML report
+            const reportHtml = createDoctorReportHTML(reportData);
+
+            // Create and download the report
+            const blob = new Blob([reportHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `IBS-Medical-Report-${currentUser.firstName}-${currentUser.lastName}-${new Date().toISOString().split('T')[0]}.html`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            showToast('Doctor report generated and downloaded successfully!');
+        }
+
+        function generateComprehensiveReport(logs, checkins) {
+            const reportDate = new Date().toLocaleDateString();
+            const last30Days = logs.slice(-30);
+            const last7Days = logs.slice(-7);
+
+            // Calculate statistics
+            const avgSeverity = logs.length > 0 ? (logs.reduce((sum, log) => {
+                const symptomValues = Object.values(log.symptoms || {}).map(v => parseInt(v) || 0);
+                return sum + (symptomValues.length > 0 ? Math.max(...symptomValues) : 0);
+            }, 0) / logs.length).toFixed(1) : 0;
+
+            const recentAvgSeverity = last7Days.length > 0 ? (last7Days.reduce((sum, log) => {
+                const symptomValues = Object.values(log.symptoms || {}).map(v => parseInt(v) || 0);
+                return sum + (symptomValues.length > 0 ? Math.max(...symptomValues) : 0);
+            }, 0) / last7Days.length).toFixed(1) : 0;
+
+            // Analyze patterns
+            const triggerAnalysis = analyzeTriggers(logs);
+            const symptomPatterns = analyzeSymptomPatterns(logs);
+            const redFlagIncidents = logs.filter(log => log.redFlags && log.redFlags.length > 0);
+            const medicationCompliance = analyzeMedicationCompliance(logs);
+
+            return {
+                patient: {
+                    name: `${currentUser.firstName} ${currentUser.lastName}`,
+                    email: currentUser.email,
+                    age: currentUser.age,
+                    gender: currentUser.gender,
+                    ibsType: currentUser.ibsType,
+                    diagnosisDate: currentUser.diagnosisDate
+                },
+                reportPeriod: {
+                    from: logs.length > 0 ? logs[0].date : 'N/A',
+                    to: logs.length > 0 ? logs[logs.length - 1].date : 'N/A',
+                    totalDays: logs.length,
+                    reportDate: reportDate
+                },
+                summary: {
+                    avgSeverity: avgSeverity,
+                    recentAvgSeverity: recentAvgSeverity,
+                    goodDays: logs.filter(log => {
+                        const symptomValues = Object.values(log.symptoms || {}).map(v => parseInt(v) || 0);
+                        return Math.max(...symptomValues) <= 3;
+                    }).length,
+                    redFlagDays: redFlagIncidents.length
+                },
+                symptoms: symptomPatterns,
+                triggers: triggerAnalysis,
+                redFlags: redFlagIncidents,
+                medications: medicationCompliance,
+                lifestyle: analyzeLifestyleFactors(logs),
+                monthlyCheckins: checkins,
+                recentLogs: last30Days
+            };
+        }
+
+        function createDoctorReportHTML(data) {
+            return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBS Medical Report - ${data.patient.name}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 3px solid #7dd3c0; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: #2c5530; margin: 0; font-size: 28px; }
+        .header p { color: #666; margin: 5px 0; }
+        .section { margin-bottom: 30px; }
+        .section h2 { color: #2c5530; border-left: 4px solid #7dd3c0; padding-left: 15px; margin-bottom: 15px; }
+        .section h3 { color: #4a5568; margin-bottom: 10px; }
+        .patient-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .patient-info table { width: 100%; }
+        .patient-info td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
+        .patient-info td:first-child { font-weight: bold; width: 30%; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .summary-card { background: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center; }
+        .summary-card .number { font-size: 24px; font-weight: bold; color: #2c5530; }
+        .summary-card .label { color: #666; font-size: 14px; }
+        .red-flag { background: #fee; border-left: 4px solid #e53e3e; padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .medication-section { background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .trigger-list { background: #fff5f5; padding: 15px; border-radius: 8px; }
+        .log-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .log-table th, .log-table td { border: 1px solid #e2e8f0; padding: 8px; text-align: left; }
+        .log-table th { background: #f7fafc; font-weight: bold; }
+        .severity-high { background: #fed7d7; }
+        .severity-medium { background: #fef5e7; }
+        .severity-low { background: #f0fff4; }
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #666; font-size: 12px; }
+        @media print { body { background: white; } .container { box-shadow: none; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌿 IBS Medical Report</h1>
+            <p><strong>Patient:</strong> ${data.patient.name}</p>
+            <p><strong>Report Generated:</strong> ${data.reportPeriod.reportDate}</p>
+            <p><strong>Data Period:</strong> ${data.reportPeriod.from} to ${data.reportPeriod.to} (${data.reportPeriod.totalDays} days)</p>
+        </div>
+
+        <div class="section">
+            <h2>Patient Information</h2>
+            <div class="patient-info">
+                <table>
+                    <tr><td>Name</td><td>${data.patient.name}</td></tr>
+                    <tr><td>Age</td><td>${data.patient.age || 'Not specified'}</td></tr>
+                    <tr><td>Gender</td><td>${data.patient.gender || 'Not specified'}</td></tr>
+                    <tr><td>IBS Type</td><td>${data.patient.ibsType || 'Not specified'}</td></tr>
+                    <tr><td>Diagnosis Date</td><td>${data.patient.diagnosisDate || 'Not specified'}</td></tr>
+                    <tr><td>Email</td><td>${data.patient.email}</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Summary Statistics</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="number">${data.reportPeriod.totalDays}</div>
+                    <div class="label">Days Logged</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number">${data.summary.avgSeverity}/10</div>
+                    <div class="label">Average Severity</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number">${data.summary.recentAvgSeverity}/10</div>
+                    <div class="label">Recent Avg (7 days)</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number">${data.summary.goodDays}</div>
+                    <div class="label">Good Days (≤3 severity)</div>
+                </div>
+            </div>
+        </div>
+
+        ${data.summary.redFlagDays > 0 ? `
+        <div class="section">
+            <h2>⚠️ Red Flag Symptoms</h2>
+            <div class="red-flag">
+                <strong>URGENT ATTENTION REQUIRED:</strong> Patient reported ${data.summary.redFlagDays} day(s) with serious symptoms requiring medical evaluation.
+                <ul>
+                    ${data.redFlags.map(log => `
+                        <li><strong>${log.date}:</strong> ${log.redFlags.join(', ')}</li>
+                    `).join('')}
+                </ul>
+            </div>
+        </div>
+        ` : ''}
+
+        <div class="section">
+            <h2>Symptom Analysis</h2>
+            <h3>Most Problematic Symptoms:</h3>
+            <ul>
+                ${Object.entries(data.symptoms.averages).sort(([,a], [,b]) => b - a).slice(0, 3).map(([symptom, avg]) => `
+                    <li><strong>${symptom.charAt(0).toUpperCase() + symptom.slice(1)}:</strong> Average severity ${avg.toFixed(1)}/10</li>
+                `).join('')}
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Trigger Analysis</h2>
+            <div class="trigger-list">
+                <h3>Most Common Dietary Triggers:</h3>
+                <ul>
+                    ${data.triggers.slice(0, 5).map(([trigger, frequency]) => `
+                        <li><strong>${trigger}:</strong> Present in ${frequency}% of logged days</li>
+                    `).join('')}
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Medication Compliance</h2>
+            <div class="medication-section">
+                <h3>Regular Medications:</h3>
+                <ul>
+                    ${Object.entries(data.medications.regular).map(([med, compliance]) => `
+                        <li><strong>${med}:</strong> ${compliance.toFixed(1)}% compliance rate</li>
+                    `).join('')}
+                </ul>
+                <h3>PRN Medications Usage:</h3>
+                <ul>
+                    ${Object.entries(data.medications.prn).map(([med, usage]) => `
+                        <li><strong>${med}:</strong> Used on ${usage.count} days (${usage.percentage.toFixed(1)}%)</li>
+                    `).join('')}
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Lifestyle Factors</h2>
+            <ul>
+                <li><strong>Average Sleep:</strong> ${data.lifestyle.avgSleep.toFixed(1)} hours per night</li>
+                <li><strong>Average Water Intake:</strong> ${data.lifestyle.avgWater.toFixed(1)} glasses per day</li>
+                <li><strong>Exercise Frequency:</strong> ${data.lifestyle.exerciseFrequency.toFixed(1)}% of days</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Recent Daily Logs (Last 30 Days)</h2>
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Max Severity</th>
+                        <th>Bristol Type</th>
+                        <th>Bowel Movements</th>
+                        <th>Main Triggers</th>
+                        <th>Red Flags</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.recentLogs.slice(-15).reverse().map(log => {
+                        const maxSeverity = Math.max(...Object.values(log.symptoms || {}).map(v => parseInt(v) || 0));
+                        const severityClass = maxSeverity <= 3 ? 'severity-low' : maxSeverity <= 6 ? 'severity-medium' : 'severity-high';
+                        return `
+                            <tr class="${severityClass}">
+                                <td>${log.date}</td>
+                                <td>${maxSeverity}/10</td>
+                                <td>Type ${log.bristol || 'N/A'}</td>
+                                <td>${log.bowelCount || 'N/A'}</td>
+                                <td>${(log.foods || []).slice(0, 2).join(', ') || 'None'}</td>
+                                <td>${(log.redFlags || []).length > 0 ? '⚠️ ' + log.redFlags.join(', ') : 'None'}</td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>This report was generated by GutEase IBS Companion App</p>
+            <p>For medical decisions, please consult with your healthcare provider</p>
+            <p>Report generated on ${new Date().toLocaleString()}</p>
+        </div>
+    </div>
+</body>
+</html>
+            `;
+        }
+
+        function analyzeTriggers(logs) {
+            const triggerCounts = {};
+            logs.forEach(log => {
+                if (log.foods) {
+                    log.foods.forEach(food => {
+                        triggerCounts[food] = (triggerCounts[food] || 0) + 1;
+                    });
+                }
+            });
+
+            return Object.entries(triggerCounts)
+                .map(([trigger, count]) => [trigger, Math.round((count / logs.length) * 100)])
+                .sort(([,a], [,b]) => b - a);
+        }
+
+        function analyzeSymptomPatterns(logs) {
+            const symptoms = ['abdominalPain', 'bloating', 'diarrhea', 'constipation', 'gas', 'nausea'];
+            const averages = {};
+
+            symptoms.forEach(symptom => {
+                const values = logs.map(log => parseInt(log.symptoms?.[symptom] || 0));
+                averages[symptom] = values.reduce((sum, val) => sum + val, 0) / values.length;
+            });
+
+            return { averages };
+        }
+
+        function analyzeMedicationCompliance(logs) {
+            const regular = {};
+            const prn = {};
+
+            // Analyze regular medication compliance
+            if (currentUser.regularMedications) {
+                currentUser.regularMedications.forEach(medId => {
+                    const takenDays = logs.filter(log => log.regularMedsTaken && log.regularMedsTaken.includes(medId)).length;
+                    regular[medId] = (takenDays / logs.length) * 100;
+                });
+            }
+
+            // Analyze PRN medication usage
+            if (currentUser.prnMedications) {
+                currentUser.prnMedications.forEach(medId => {
+                    const usedDays = logs.filter(log => log.prnMedsTaken && log.prnMedsTaken.includes(medId)).length;
+                    prn[medId] = {
+                        count: usedDays,
+                        percentage: (usedDays / logs.length) * 100
+                    };
+                });
+            }
+
+            return { regular, prn };
+        }
+
+        function analyzeLifestyleFactors(logs) {
+            const sleepHours = logs.map(log => parseFloat(log.sleepHours || 7)).filter(h => h > 0);
+            const waterIntakes = logs.map(log => parseInt(log.waterIntake || 8)).filter(w => w > 0);
+            const exerciseDays = logs.filter(log => log.exercise && log.exercise !== 'none').length;
+
+            return {
+                avgSleep: sleepHours.length > 0 ? sleepHours.reduce((sum, h) => sum + h, 0) / sleepHours.length : 7,
+                avgWater: waterIntakes.length > 0 ? waterIntakes.reduce((sum, w) => sum + w, 0) / waterIntakes.length : 8,
+                exerciseFrequency: (exerciseDays / logs.length) * 100
+            };
+        }
+
+        function resetDailyLogForm() {
+            // Reset individual symptom sliders
+            const symptomSliders = [
+                'abdominal-pain-severity',
+                'bloating-severity',
+                'diarrhea-severity',
+                'constipation-severity',
+                'gas-severity',
+                'nausea-severity'
+            ];
+
+            symptomSliders.forEach(sliderId => {
+                const slider = document.getElementById(sliderId);
+                const valueId = sliderId.replace('-severity', '-value');
+                if (slider) {
+                    slider.value = 0;
+                    document.getElementById(valueId).textContent = '0';
+                }
+            });
+
+            // Reset all selections
+            selectedBristol = null;
+            selectedMood = null;
+            selectedFoods = [];
+            selectedUrgency = null;
+            selectedSleepQuality = null;
+            selectedExercise = null;
+            bowelCount = 0;
+            sleepHours = 7.0;
+            waterIntake = 8;
+
+            // Reset UI elements
+            document.getElementById('bowel-count').textContent = '0';
+            document.getElementById('sleep-hours').textContent = '7.0';
+            document.getElementById('water-intake').textContent = '8';
+
+            // Reset visual selections
+            document.querySelectorAll('.bristol-tile, .mood-btn, .food-tile, .urgency-btn, .sleep-quality-btn, .exercise-btn, .quality-btn').forEach(element => {
+                element.classList.remove('selected');
+                element.classList.remove('border-calm-green');
+                element.classList.add('border-gray-200');
+                element.style.backgroundColor = '';
+            });
+
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.checked = false;
+            });
+
+            document.querySelectorAll('textarea').forEach(textarea => {
+                textarea.value = '';
+            });
+
+            // Hide PRN reason fields
+            document.querySelectorAll('[id^="prn-reason-"]').forEach(div => {
+                div.classList.add('hidden');
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+
+            toastMessage.textContent = message;
+
+            if (type === 'error') {
+                toast.className = 'toast bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg';
+            } else {
+                toast.className = 'toast bg-calm-green text-white px-6 py-3 rounded-lg shadow-lg';
+            }
+
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        function exportLogs() {
+            if (!currentUser) return;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const userCheckinsKey = `monthlyCheckins_${currentUser.email}`;
+
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+            const checkins = JSON.parse(localStorage.getItem(userCheckinsKey) || '[]');
+
+            const exportData = {
+                user: {
+                    name: `${currentUser.firstName} ${currentUser.lastName}`,
+                    email: currentUser.email,
+                    ibsType: currentUser.ibsType
+                },
+                dailyLogs: logs,
+                monthlyCheckins: checkins,
+                exportDate: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `gutease-health-data-${currentUser.firstName}-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+
+            showToast('Health data exported successfully!');
+        }
+
+        // Chart and analytics functions
+        function updateChartsData() {
+            if (!currentUser) return;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+
+            // Severity trend chart
+            const severityCtx = document.getElementById('severityChart');
+            if (severityCtx && logs.length > 0) {
+                const last30Days = logs.slice(-30);
+                const labels = last30Days.map(log => new Date(log.date).toLocaleDateString());
+                const data = last30Days.map(log => parseInt(log.severity));
+
+                new Chart(severityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Symptom Severity',
+                            data: data,
+                            borderColor: '#7dd3c0',
+                            backgroundColor: 'rgba(125, 211, 192, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 10
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Mood distribution chart
+            const moodCtx = document.getElementById('moodChart');
+            if (moodCtx && logs.length > 0) {
+                const moodCounts = [0, 0, 0, 0, 0]; // Very Low, Low, Neutral, Good, Excellent
+                logs.forEach(log => {
+                    if (log.mood) {
+                        moodCounts[log.mood - 1]++;
+                    }
+                });
+
+                new Chart(moodCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Very Low', 'Low', 'Neutral', 'Good', 'Excellent'],
+                        datasets: [{
+                            data: moodCounts,
+                            backgroundColor: [
+                                '#f687b3',
+                                '#fbb6ce',
+                                '#63b3ed',
+                                '#a8d8ea',
+                                '#7dd3c0'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true
+                    }
+                });
+            }
+        }
+
+        function updateSummaryCards() {
+            if (!currentUser) return;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+
+            const daysLogged = logs.length;
+
+            // Calculate average severity from individual symptoms
+            let totalSeverity = 0;
+            logs.forEach(log => {
+                if (log.symptoms && typeof log.symptoms === 'object') {
+                    const symptomValues = Object.values(log.symptoms).map(v => parseInt(v) || 0);
+                    const maxSeverity = symptomValues.length > 0 ? Math.max(...symptomValues) : 0;
+                    totalSeverity += maxSeverity;
+                } else if (log.severity) {
+                    totalSeverity += parseInt(log.severity);
+                }
+            });
+            const avgSeverity = logs.length > 0 ? (totalSeverity / logs.length).toFixed(1) : 0;
+
+            // Calculate good days (max symptom severity <= 3)
+            const goodDays = logs.filter(log => {
+                if (log.symptoms && typeof log.symptoms === 'object') {
+                    const symptomValues = Object.values(log.symptoms).map(v => parseInt(v) || 0);
+                    const maxSeverity = symptomValues.length > 0 ? Math.max(...symptomValues) : 0;
+                    return maxSeverity <= 3;
+                } else if (log.severity) {
+                    return parseInt(log.severity) <= 3;
+                }
+                return true;
+            }).length;
+            const uniqueTriggers = new Set();
+            logs.forEach(log => {
+                if (log.foods) log.foods.forEach(food => uniqueTriggers.add(food));
+            });
+
+            const summaryHtml = `
+                <div class="bg-white rounded-xl p-6 card-shadow text-center">
+                    <div class="text-3xl font-bold text-calm-green mb-2">${daysLogged}</div>
+                    <div class="text-gray-600">Days Logged</div>
+                </div>
+                <div class="bg-white rounded-xl p-6 card-shadow text-center">
+                    <div class="text-3xl font-bold text-soft-blue mb-2">${avgSeverity}</div>
+                    <div class="text-gray-600">Avg Severity</div>
+                </div>
+                <div class="bg-white rounded-xl p-6 card-shadow text-center">
+                    <div class="text-3xl font-bold text-gentle-blue mb-2">${goodDays}</div>
+                    <div class="text-gray-600">Good Days</div>
+                </div>
+                <div class="bg-white rounded-xl p-6 card-shadow text-center">
+                    <div class="text-3xl font-bold text-deep-teal mb-2">${uniqueTriggers.size}</div>
+                    <div class="text-gray-600">Triggers Found</div>
+                </div>
+            `;
+
+            document.getElementById('summary-cards').innerHTML = summaryHtml;
+        }
+
+        function updateLogsTable() {
+            if (!currentUser) return;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+
+            const recentLogs = logs.slice(-10).reverse(); // Last 10 logs, most recent first
+
+            let tableHtml = '';
+            recentLogs.forEach(log => {
+                // Calculate overall severity from individual symptoms
+                let overallSeverity = 0;
+                if (log.symptoms && typeof log.symptoms === 'object') {
+                    const symptomValues = Object.values(log.symptoms).map(v => parseInt(v) || 0);
+                    overallSeverity = symptomValues.length > 0 ? Math.max(...symptomValues) : 0;
+                } else if (log.severity) {
+                    overallSeverity = parseInt(log.severity);
+                }
+
+                const severityClass = overallSeverity <= 3 ? 'bg-green-100 text-green-800' :
+                                   overallSeverity <= 6 ? 'bg-yellow-100 text-yellow-800' :
+                                   'bg-red-100 text-red-800';
+
+                const moodEmoji = ['😢', '😔', '😐', '🙂', '😊'][log.mood - 1] || '😐';
+                const moodText = ['Very Low', 'Low', 'Neutral', 'Good', 'Excellent'][log.mood - 1] || 'Neutral';
+
+                // Format symptoms display
+                let symptomsDisplay = 'None';
+                if (log.symptoms && typeof log.symptoms === 'object') {
+                    const activeSymptoms = [];
+                    if (parseInt(log.symptoms.abdominalPain) > 0) activeSymptoms.push(`Pain(${log.symptoms.abdominalPain})`);
+                    if (parseInt(log.symptoms.bloating) > 0) activeSymptoms.push(`Bloating(${log.symptoms.bloating})`);
+                    if (parseInt(log.symptoms.diarrhea) > 0) activeSymptoms.push(`Diarrhea(${log.symptoms.diarrhea})`);
+                    if (parseInt(log.symptoms.constipation) > 0) activeSymptoms.push(`Constipation(${log.symptoms.constipation})`);
+                    if (parseInt(log.symptoms.gas) > 0) activeSymptoms.push(`Gas(${log.symptoms.gas})`);
+                    if (parseInt(log.symptoms.nausea) > 0) activeSymptoms.push(`Nausea(${log.symptoms.nausea})`);
+                    symptomsDisplay = activeSymptoms.length > 0 ? activeSymptoms.join(', ') : 'None';
+                } else if (log.symptoms && Array.isArray(log.symptoms)) {
+                    symptomsDisplay = log.symptoms.join(', ');
+                }
+
+                tableHtml += `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-4">${new Date(log.date).toLocaleDateString()}</td>
+                        <td class="py-3 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${severityClass}">
+                                ${overallSeverity}/10
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">${moodEmoji} ${moodText}</td>
+                        <td class="py-3 px-4 text-sm">${symptomsDisplay}</td>
+                        <td class="py-3 px-4">${log.foods ? log.foods.join(', ') : 'None'}</td>
+                    </tr>
+                `;
+            });
+
+            if (!tableHtml) {
+                tableHtml = '<tr><td colspan="5" class="py-8 text-center text-gray-500">No logs yet. Start by creating your first daily log!</td></tr>';
+            }
+
+            document.getElementById('logs-table-body').innerHTML = tableHtml;
+        }
+
+        function updateInsightsCharts() {
+            if (!currentUser) return;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+
+            if (logs.length === 0) return;
+
+            // Trigger analysis chart
+            const triggerCtx = document.getElementById('triggerChart');
+            if (triggerCtx) {
+                const triggerCounts = {};
+                logs.forEach(log => {
+                    if (log.foods) {
+                        log.foods.forEach(food => {
+                            triggerCounts[food] = (triggerCounts[food] || 0) + 1;
+                        });
+                    }
+                });
+
+                const sortedTriggers = Object.entries(triggerCounts)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 5);
+
+                if (sortedTriggers.length > 0) {
+                    new Chart(triggerCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: sortedTriggers.map(([trigger]) => trigger),
+                            datasets: [{
+                                label: 'Frequency',
+                                data: sortedTriggers.map(([, count]) => Math.round((count / logs.length) * 100)),
+                                backgroundColor: '#7dd3c0'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value + '%';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Weekly pattern chart
+            const weeklyCtx = document.getElementById('weeklyChart');
+            if (weeklyCtx) {
+                const weeklyData = [0, 0, 0, 0, 0, 0, 0]; // Sun-Sat
+                const weeklyCounts = [0, 0, 0, 0, 0, 0, 0];
+
+                logs.forEach(log => {
+                    const dayOfWeek = new Date(log.date).getDay();
+                    weeklyData[dayOfWeek] += parseInt(log.severity);
+                    weeklyCounts[dayOfWeek]++;
+                });
+
+                const weeklyAverages = weeklyData.map((total, index) =>
+                    weeklyCounts[index] > 0 ? total / weeklyCounts[index] : 0
+                );
+
+                new Chart(weeklyCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                        datasets: [{
+                            label: 'Average Severity',
+                            data: weeklyAverages,
+                            borderColor: '#a8d8ea',
+                            backgroundColor: 'rgba(168, 216, 234, 0.2)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 10
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateInsightsCards() {
+            if (!currentUser) return;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+
+            if (logs.length === 0) {
+                document.getElementById('insights-cards').innerHTML = '<p class="col-span-3 text-center text-gray-500">No data available yet. Start logging to see insights!</p>';
+                return;
+            }
+
+            // Calculate top trigger
+            const triggerCounts = {};
+            logs.forEach(log => {
+                if (log.foods) {
+                    log.foods.forEach(food => {
+                        triggerCounts[food] = (triggerCounts[food] || 0) + 1;
+                    });
+                }
+            });
+
+            const topTrigger = Object.entries(triggerCounts)
+                .sort(([,a], [,b]) => b - a)[0];
+
+            // Calculate improvement
+            const recentLogs = logs.slice(-14); // Last 2 weeks
+            const olderLogs = logs.slice(-28, -14); // Previous 2 weeks
+
+            const recentAvg = recentLogs.length > 0 ? recentLogs.reduce((sum, log) => sum + parseInt(log.severity), 0) / recentLogs.length : 0;
+            const olderAvg = olderLogs.length > 0 ? olderLogs.reduce((sum, log) => sum + parseInt(log.severity), 0) / olderLogs.length : recentAvg;
+
+            const improvement = olderAvg > 0 ? Math.round(((olderAvg - recentAvg) / olderAvg) * 100) : 0;
+
+            // Find best day
+            const weeklyData = [0, 0, 0, 0, 0, 0, 0];
+            const weeklyCounts = [0, 0, 0, 0, 0, 0, 0];
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+            logs.forEach(log => {
+                const dayOfWeek = new Date(log.date).getDay();
+                weeklyData[dayOfWeek] += parseInt(log.severity);
+                weeklyCounts[dayOfWeek]++;
+            });
+
+            const weeklyAverages = weeklyData.map((total, index) =>
+                weeklyCounts[index] > 0 ? total / weeklyCounts[index] : 10
+            );
+
+            const bestDayIndex = weeklyAverages.indexOf(Math.min(...weeklyAverages));
+            const bestDay = dayNames[bestDayIndex];
+
+            const insightsHtml = `
+                <div class="insight-card rounded-xl p-6 card-shadow">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-calm-green rounded-lg flex items-center justify-center mr-3">
+                            <span class="text-white text-lg">🎯</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800">Top Trigger</h3>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-800 mb-2">${topTrigger ? topTrigger[0] : 'None identified'}</p>
+                    <p class="text-gray-600 text-sm">${topTrigger ? `Appears in ${Math.round((topTrigger[1] / logs.length) * 100)}% of logs` : 'Keep logging to identify patterns'}</p>
+                </div>
+
+                <div class="insight-card rounded-xl p-6 card-shadow">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-soft-blue rounded-lg flex items-center justify-center mr-3">
+                            <span class="text-white text-lg">📈</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800">Improvement</h3>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-800 mb-2">${improvement > 0 ? '-' : '+'}${Math.abs(improvement)}%</p>
+                    <p class="text-gray-600 text-sm">Symptom severity vs previous period</p>
+                </div>
+
+                <div class="insight-card rounded-xl p-6 card-shadow">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-gentle-blue rounded-lg flex items-center justify-center mr-3">
+                            <span class="text-white text-lg">⭐</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800">Best Day</h3>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-800 mb-2">${bestDay}s</p>
+                    <p class="text-gray-600 text-sm">Consistently lowest symptom scores</p>
+                </div>
+            `;
+
+            document.getElementById('insights-cards').innerHTML = insightsHtml;
+        }
+
+        function updateRecommendations() {
+            if (!currentUser) return;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+
+            if (logs.length === 0) {
+                document.getElementById('recommendations-content').innerHTML = '<p class="text-gray-500">Start logging your daily symptoms to receive personalized recommendations.</p>';
+                return;
+            }
+
+            // Generate recommendations based on data
+            const triggerCounts = {};
+            logs.forEach(log => {
+                if (log.foods) {
+                    log.foods.forEach(food => {
+                        triggerCounts[food] = (triggerCounts[food] || 0) + 1;
+                    });
+                }
+            });
+
+            const topTriggers = Object.entries(triggerCounts)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 3);
+
+            const avgSeverity = logs.reduce((sum, log) => sum + parseInt(log.severity), 0) / logs.length;
+
+            let dietaryRecommendations = [];
+            let lifestyleRecommendations = [];
+
+            if (topTriggers.length > 0) {
+                dietaryRecommendations.push(`Consider eliminating ${topTriggers[0][0]} for 2-3 weeks to test sensitivity`);
+                if (topTriggers.length > 1) {
+                    dietaryRecommendations.push(`Monitor your intake of ${topTriggers[1][0]} - it appears frequently in your logs`);
+                }
+            }
+
+            if (avgSeverity > 6) {
+                dietaryRecommendations.push('Focus on gentle, easily digestible foods during high-symptom periods');
+                lifestyleRecommendations.push('Consider stress management techniques as high severity may indicate stress impact');
+            } else if (avgSeverity < 4) {
+                dietaryRecommendations.push('Your current diet seems to be working well - maintain these patterns');
+                lifestyleRecommendations.push('Great job managing your symptoms! Continue your current strategies');
+            }
+
+            lifestyleRecommendations.push('Maintain consistent meal times and sleep schedule');
+            lifestyleRecommendations.push('Consider light exercise on your better days to support digestive health');
+
+            const recommendationsHtml = `
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-700 mb-4 flex items-center">
+                            <span class="text-2xl mr-2">🥗</span>
+                            Dietary Suggestions
+                        </h4>
+                        <ul class="space-y-3">
+                            ${dietaryRecommendations.map(rec => `
+                                <li class="flex items-start space-x-3">
+                                    <span class="text-green-500 mt-1">✓</span>
+                                    <span class="text-gray-700">${rec}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-700 mb-4 flex items-center">
+                            <span class="text-2xl mr-2">🧘</span>
+                            Lifestyle Tips
+                        </h4>
+                        <ul class="space-y-3">
+                            ${lifestyleRecommendations.map(rec => `
+                                <li class="flex items-start space-x-3">
+                                    <span class="text-blue-500 mt-1">✓</span>
+                                    <span class="text-gray-700">${rec}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-4 bg-light-green rounded-lg">
+                    <h4 class="font-medium text-gray-800 mb-2">💡 This Month's Focus</h4>
+                    <p class="text-gray-700">Based on your ${logs.length} logged days with an average severity of ${avgSeverity.toFixed(1)}, ${
+                        avgSeverity > 6 ? 'focus on identifying and eliminating your main triggers. Consider consulting with your healthcare provider about additional management strategies.' :
+                        avgSeverity > 4 ? 'continue monitoring your triggers and maintain your current management approach. Small adjustments to diet and stress management could help further.' :
+                        'you\'re doing great! Keep up your current strategies and continue logging to maintain these positive trends.'
+                    }</p>
+                </div>
+            `;
+
+            document.getElementById('recommendations-content').innerHTML = recommendationsHtml;
+        }
+
+        function updateFlareEpisodesCount() {
+            if (!currentUser) return;
+
+            const flareCount = calculateFlareEpisodes();
+            const flareElement = document.getElementById('flare-episodes-count');
+            if (flareElement) {
+                flareElement.textContent = flareCount;
+            }
+        }
+
+        function updateReportSummary() {
+            if (!currentUser) return;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const userCheckinsKey = `monthlyCheckins_${currentUser.email}`;
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+            const checkins = JSON.parse(localStorage.getItem(userCheckinsKey) || '[]');
+
+            const summaryHtml = `
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h4 class="font-medium text-gray-800 mb-4">📊 Your Data Summary</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-calm-green">${logs.length}</div>
+                            <div class="text-sm text-gray-600">Daily Logs</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-soft-blue">${checkins.length}</div>
+                            <div class="text-sm text-gray-600">Monthly Check-ins</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gentle-blue">${logs.filter(log => log.redFlags && log.redFlags.length > 0).length}</div>
+                            <div class="text-sm text-gray-600">Red Flag Days</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-deep-teal">${calculateFlareEpisodes()}</div>
+                            <div class="text-sm text-gray-600">Flare Episodes (30d)</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const availableDataHtml = `
+                <ul class="text-green-700 text-sm space-y-2">
+                    <li>✓ ${logs.length} daily symptom logs</li>
+                    <li>✓ ${checkins.length} monthly assessments</li>
+                    <li>✓ ${currentUser.regularMedications ? currentUser.regularMedications.length : 0} regular medications tracked</li>
+                    <li>✓ ${currentUser.prnMedications ? currentUser.prnMedications.length : 0} PRN medications tracked</li>
+                    <li>✓ Mental health screening results</li>
+                    <li>✓ Trigger and lifestyle analysis</li>
+                </ul>
+            `;
+
+            document.getElementById('report-summary').innerHTML = summaryHtml;
+            document.getElementById('available-data').innerHTML = availableDataHtml;
+        }
+
+        function previewReport() {
+            if (!currentUser) return;
+
+            const userLogsKey = `ibsLogs_${currentUser.email}`;
+            const userCheckinsKey = `monthlyCheckins_${currentUser.email}`;
+            const logs = JSON.parse(localStorage.getItem(userLogsKey) || '[]');
+            const checkins = JSON.parse(localStorage.getItem(userCheckinsKey) || '[]');
+
+            if (logs.length === 0) {
+                showToast('No data available to preview. Please log some daily entries first.', 'error');
+                return;
+            }
+
+            const reportData = generateComprehensiveReport(logs, checkins);
+            const previewHtml = createReportPreview(reportData);
+
+            document.getElementById('report-preview-content').innerHTML = previewHtml;
+            document.getElementById('report-preview-modal').classList.remove('hidden');
+        }
+
+        function closeReportPreview() {
+            document.getElementById('report-preview-modal').classList.add('hidden');
+        }
+
+        function createReportPreview(data) {
+            return `
+                <div class="space-y-6">
+                    <div class="text-center border-b pb-4">
+                        <h1 class="text-2xl font-bold text-gray-800">IBS Medical Report Preview</h1>
+                        <p class="text-gray-600">Patient: ${data.patient.name}</p>
+                        <p class="text-gray-600">Report Period: ${data.reportPeriod.from} to ${data.reportPeriod.to}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-green-50 p-4 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-green-600">${data.reportPeriod.totalDays}</div>
+                            <div class="text-sm text-gray-600">Days Logged</div>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-blue-600">${data.summary.avgSeverity}/10</div>
+                            <div class="text-sm text-gray-600">Avg Severity</div>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-yellow-600">${data.summary.goodDays}</div>
+                            <div class="text-sm text-gray-600">Good Days</div>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-red-600">${data.summary.redFlagDays}</div>
+                            <div class="text-sm text-gray-600">Red Flag Days</div>
+                        </div>
+                    </div>
+
+                    ${data.summary.redFlagDays > 0 ? `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <h3 class="font-bold text-red-800 mb-2">⚠️ Red Flag Symptoms Detected</h3>
+                        <p class="text-red-700 text-sm">Patient reported ${data.summary.redFlagDays} day(s) with serious symptoms requiring medical evaluation.</p>
+                    </div>
+                    ` : ''}
+
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-gray-800 mb-3">Top Triggers</h3>
+                        <ul class="text-gray-700 text-sm space-y-1">
+                            ${data.triggers.slice(0, 3).map(([trigger, frequency]) => `
+                                <li>• ${trigger}: ${frequency}% of logged days</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="text-center text-gray-600 text-sm">
+                        <p>This is a preview. The full report contains detailed analysis, medication compliance, mental health screening results, and complete daily logs.</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97225a0e3467f931',t:'MTc1NTY5Nzc0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
